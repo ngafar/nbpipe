@@ -1,5 +1,7 @@
 name: my_workflow
-notebooks:
-  - step1.ipynb
-  - step2.ipynb
-  - step3.ipynb
+steps:
+  - notebook: step1.ipynb
+    output: data/processed.csv
+  - notebook: step2.ipynb
+  - notebook: step3.ipynb
+    output: results/report.html

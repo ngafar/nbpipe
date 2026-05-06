@@ -24,9 +24,9 @@ def make_notebook(path, sources):
 
 
 def make_workflow(path, name, notebooks):
-    lines = [f"name: {name}", "notebooks:"]
+    lines = [f"name: {name}", "steps:"]
     for nb in notebooks:
-        lines.append(f"  - {nb}")
+        lines.append(f"  - notebook: {nb}")
     path.write_text("\n".join(lines) + "\n")
 
 
@@ -72,7 +72,6 @@ def test_no_command_exits_nonzero():
 
 
 def test_run_multiple_notebooks_in_order(tmp_path):
-    # second notebook depends on a file written by the first
     make_notebook(tmp_path / "a.ipynb", ["open('out.txt', 'w').write('hello')"])
     make_notebook(tmp_path / "b.ipynb", ["print(open('out.txt').read())"])
     make_workflow(tmp_path / "wf.yaml", "chained", ["a.ipynb", "b.ipynb"])
@@ -80,3 +79,25 @@ def test_run_multiple_notebooks_in_order(tmp_path):
     result = run_cli("run", str(tmp_path / "wf.yaml"))
 
     assert result.returncode == 0
+
+
+def test_output_check_passes_when_file_exists(tmp_path):
+    out_file = tmp_path / "result.csv"
+    make_notebook(tmp_path / "nb.ipynb", [f"open('{out_file}', 'w').write('data')"])
+    wf = f"name: test\nsteps:\n  - notebook: nb.ipynb\n    output: result.csv\n"
+    (tmp_path / "wf.yaml").write_text(wf)
+
+    result = run_cli("run", str(tmp_path / "wf.yaml"))
+
+    assert result.returncode == 0
+
+
+def test_output_check_fails_when_file_missing(tmp_path):
+    make_notebook(tmp_path / "nb.ipynb", ["x = 1"])
+    wf = "name: test\nsteps:\n  - notebook: nb.ipynb\n    output: missing.csv\n"
+    (tmp_path / "wf.yaml").write_text(wf)
+
+    result = run_cli("run", str(tmp_path / "wf.yaml"))
+
+    assert result.returncode == 1
+    assert "missing.csv" in result.stderr

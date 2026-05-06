@@ -7,16 +7,21 @@ from .workflow import load_workflow
 
 def _run(args: argparse.Namespace) -> None:
     workflow = load_workflow(args.workflow)
-    total = len(workflow.notebooks)
-    print(f"Workflow: {workflow.name}  ({total} notebook{'s' if total != 1 else ''})")
+    total = len(workflow.steps)
+    print(f"Workflow: {workflow.name}  ({total} step{'s' if total != 1 else ''})")
 
-    for i, step in enumerate(workflow.notebooks, 1):
-        print(f"  [{i}/{total}] {step.path.name}", end="", flush=True)
+    for i, step in enumerate(workflow.steps, 1):
+        print(f"  [{i}/{total}] {step.notebook.name}", end="", flush=True)
         try:
-            execute_notebook(step.path)
+            execute_notebook(step.notebook)
         except Exception as exc:
             print(f"  FAILED\n{exc}", file=sys.stderr)
             sys.exit(1)
+
+        if step.output and not step.output.exists():
+            print(f"  FAILED\nExpected output not found: {step.output}", file=sys.stderr)
+            sys.exit(1)
+
         print(" done")
 
     print("Done.")

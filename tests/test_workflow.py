@@ -1,5 +1,5 @@
 import pytest
-from nbpipe.workflow import NotebookStep, Workflow, load_workflow
+from nbpipe.workflow import Step, Workflow, load_workflow
 
 
 def write_yaml(path, content):
@@ -8,31 +8,31 @@ def write_yaml(path, content):
 
 
 def test_load_simple(tmp_path):
-    f = write_yaml(tmp_path / "wf.yaml", "name: my_workflow\nnotebooks:\n  - a.ipynb\n  - b.ipynb\n")
+    f = write_yaml(tmp_path / "wf.yaml", "name: my_workflow\nsteps:\n  - notebook: a.ipynb\n  - notebook: b.ipynb\n")
     wf = load_workflow(f)
 
     assert wf.name == "my_workflow"
-    assert len(wf.notebooks) == 2
-    assert wf.notebooks[0].path == tmp_path / "a.ipynb"
-    assert wf.notebooks[1].path == tmp_path / "b.ipynb"
+    assert len(wf.steps) == 2
+    assert wf.steps[0].notebook == tmp_path / "a.ipynb"
+    assert wf.steps[1].notebook == tmp_path / "b.ipynb"
 
 
 def test_paths_resolve_relative_to_yaml(tmp_path):
     sub = tmp_path / "subdir"
     sub.mkdir()
-    f = write_yaml(sub / "wf.yaml", "name: test\nnotebooks:\n  - step.ipynb\n")
+    f = write_yaml(sub / "wf.yaml", "name: test\nsteps:\n  - notebook: step.ipynb\n")
 
     wf = load_workflow(f)
 
-    assert wf.notebooks[0].path == sub / "step.ipynb"
+    assert wf.steps[0].notebook == sub / "step.ipynb"
 
 
 def test_returns_workflow_dataclass(tmp_path):
-    f = write_yaml(tmp_path / "wf.yaml", "name: x\nnotebooks:\n  - n.ipynb\n")
+    f = write_yaml(tmp_path / "wf.yaml", "name: x\nsteps:\n  - notebook: n.ipynb\n")
     wf = load_workflow(f)
 
     assert isinstance(wf, Workflow)
-    assert isinstance(wf.notebooks[0], NotebookStep)
+    assert isinstance(wf.steps[0], Step)
 
 
 def test_missing_file_raises(tmp_path):
@@ -40,8 +40,34 @@ def test_missing_file_raises(tmp_path):
         load_workflow(tmp_path / "missing.yaml")
 
 
-def test_single_notebook(tmp_path):
-    f = write_yaml(tmp_path / "wf.yaml", "name: solo\nnotebooks:\n  - only.ipynb\n")
+def test_single_step(tmp_path):
+    f = write_yaml(tmp_path / "wf.yaml", "name: solo\nsteps:\n  - notebook: only.ipynb\n")
     wf = load_workflow(f)
 
-    assert len(wf.notebooks) == 1
+    assert len(wf.steps) == 1
+
+
+def test_output_field_parsed(tmp_path):
+    f = write_yaml(
+        tmp_path / "wf.yaml",
+        "name: x\nsteps:\n  - notebook: n.ipynb\n    output: results/out.csv\n",
+    )
+    wf = load_workflow(f)
+
+    assert wf.steps[0].output == tmp_path / "results/out.csv"
+
+
+def test_output_field_optional(tmp_path):
+    f = write_yaml(tmp_path / "wf.yaml", "name: x\nsteps:\n  - notebook: n.ipynb\n")
+    wf = load_workflow(f)
+
+    assert wf.steps[0].output is None
+
+
+def test_output_resolves_relative_to_yaml(tmp_path):
+    sub = tmp_path / "sub"
+    sub.mkdir()
+    f = write_yaml(sub / "wf.yaml", "name: x\nsteps:\n  - notebook: n.ipynb\n    output: out/file.csv\n")
+    wf = load_workflow(f)
+
+    assert wf.steps[0].output == sub / "out/file.csv"

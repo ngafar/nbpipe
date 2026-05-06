@@ -1,18 +1,20 @@
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Optional
 
 import yaml
 
 
 @dataclass
-class NotebookStep:
-    path: Path
+class Step:
+    notebook: Path
+    output: Optional[Path] = None
 
 
 @dataclass
 class Workflow:
     name: str
-    notebooks: list[NotebookStep]
+    steps: list[Step]
 
 
 def load_workflow(path: str | Path) -> Workflow:
@@ -22,6 +24,12 @@ def load_workflow(path: str | Path) -> Workflow:
     with open(path) as f:
         data = yaml.safe_load(f)
 
-    notebooks = [NotebookStep(path=base / item) for item in data["notebooks"]]
+    steps = [
+        Step(
+            notebook=base / item["notebook"],
+            output=base / item["output"] if "output" in item else None,
+        )
+        for item in data["steps"]
+    ]
 
-    return Workflow(name=data["name"], notebooks=notebooks)
+    return Workflow(name=data["name"], steps=steps)
