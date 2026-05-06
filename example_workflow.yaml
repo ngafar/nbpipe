@@ -1,0 +1,5 @@
+name: my_workflow
+notebooks:
+  - step1.ipynb
+  - step2.ipynb
+  - step3.ipynb
