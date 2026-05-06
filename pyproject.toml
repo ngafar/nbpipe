@@ -1,7 +1,7 @@
 [project]
 name = "nbpipe"
-version = "0.1.0"
-description = "Add your description here"
+version = "0.1.1"
+description = "Run sequences of Jupyter notebooks as a workflow from the command line."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
