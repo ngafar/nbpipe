@@ -19,7 +19,9 @@ def _run(args: argparse.Namespace) -> None:
             sys.exit(1)
 
         if step.output and not step.output.exists():
-            print(f"  FAILED\nExpected output not found: {step.output}", file=sys.stderr)
+            print(
+                f"  FAILED\nExpected output not found: {step.output}", file=sys.stderr
+            )
             sys.exit(1)
 
         print(" done")
@@ -28,7 +30,9 @@ def _run(args: argparse.Namespace) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(prog="nbpipe", description="Run notebook workflows")
+    parser = argparse.ArgumentParser(
+        prog="nbpipe", description="Run notebook workflows"
+    )
     sub = parser.add_subparsers(dest="command", metavar="<command>")
 
     run_p = sub.add_parser("run", help="Execute a workflow YAML")

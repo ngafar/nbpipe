@@ -36,22 +36,30 @@ def test_multi_step_pipeline(tmp_path):
     csv = tmp_path / "data.csv"
     result_txt = tmp_path / "result.txt"
 
-    make_notebook(tmp_path / "extract.ipynb", [
-        f"with open('{csv}', 'w') as f: f.write('a,b\\n1,2\\n3,4')"
-    ])
-    make_notebook(tmp_path / "transform.ipynb", [
-        f"rows = open('{csv}').readlines()",
-        f"total = sum(int(r.split(',')[0]) for r in rows[1:])",
-        f"open('{result_txt}', 'w').write(str(total))",
-    ])
-    make_notebook(tmp_path / "verify.ipynb", [
-        f"assert open('{result_txt}').read() == '4'"
-    ])
-    make_workflow(tmp_path / "wf.yaml", "pipeline", [
-        {"notebook": "extract.ipynb", "output": str(csv)},
-        {"notebook": "transform.ipynb", "output": str(result_txt)},
-        {"notebook": "verify.ipynb"},
-    ])
+    make_notebook(
+        tmp_path / "extract.ipynb",
+        [f"with open('{csv}', 'w') as f: f.write('a,b\\n1,2\\n3,4')"],
+    )
+    make_notebook(
+        tmp_path / "transform.ipynb",
+        [
+            f"rows = open('{csv}').readlines()",
+            f"total = sum(int(r.split(',')[0]) for r in rows[1:])",
+            f"open('{result_txt}', 'w').write(str(total))",
+        ],
+    )
+    make_notebook(
+        tmp_path / "verify.ipynb", [f"assert open('{result_txt}').read() == '4'"]
+    )
+    make_workflow(
+        tmp_path / "wf.yaml",
+        "pipeline",
+        [
+            {"notebook": "extract.ipynb", "output": str(csv)},
+            {"notebook": "transform.ipynb", "output": str(result_txt)},
+            {"notebook": "verify.ipynb"},
+        ],
+    )
 
     result = run_cli("run", str(tmp_path / "wf.yaml"))
 
@@ -66,11 +74,15 @@ def test_fail_fast_on_error(tmp_path):
     make_notebook(tmp_path / "ok.ipynb", ["x = 1"])
     make_notebook(tmp_path / "bad.ipynb", ["raise ValueError('step failed')"])
     make_notebook(tmp_path / "never.ipynb", [f"open('{sentinel}', 'w').write('ran')"])
-    make_workflow(tmp_path / "wf.yaml", "failing", [
-        {"notebook": "ok.ipynb"},
-        {"notebook": "bad.ipynb"},
-        {"notebook": "never.ipynb"},
-    ])
+    make_workflow(
+        tmp_path / "wf.yaml",
+        "failing",
+        [
+            {"notebook": "ok.ipynb"},
+            {"notebook": "bad.ipynb"},
+            {"notebook": "never.ipynb"},
+        ],
+    )
 
     result = run_cli("run", str(tmp_path / "wf.yaml"))
 
@@ -81,9 +93,13 @@ def test_fail_fast_on_error(tmp_path):
 def test_output_check_catches_missing_file(tmp_path):
     """A notebook that runs cleanly but skips writing its declared output fails the workflow."""
     make_notebook(tmp_path / "nb.ipynb", ["x = 1"])  # never writes the output
-    make_workflow(tmp_path / "wf.yaml", "missing-output", [
-        {"notebook": "nb.ipynb", "output": "report.csv"},
-    ])
+    make_workflow(
+        tmp_path / "wf.yaml",
+        "missing-output",
+        [
+            {"notebook": "nb.ipynb", "output": "report.csv"},
+        ],
+    )
 
     result = run_cli("run", str(tmp_path / "wf.yaml"))
 

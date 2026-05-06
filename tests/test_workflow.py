@@ -8,7 +8,10 @@ def write_yaml(path, content):
 
 
 def test_load_simple(tmp_path):
-    f = write_yaml(tmp_path / "wf.yaml", "name: my_workflow\nsteps:\n  - notebook: a.ipynb\n  - notebook: b.ipynb\n")
+    f = write_yaml(
+        tmp_path / "wf.yaml",
+        "name: my_workflow\nsteps:\n  - notebook: a.ipynb\n  - notebook: b.ipynb\n",
+    )
     wf = load_workflow(f)
 
     assert wf.name == "my_workflow"
@@ -41,7 +44,9 @@ def test_missing_file_raises(tmp_path):
 
 
 def test_single_step(tmp_path):
-    f = write_yaml(tmp_path / "wf.yaml", "name: solo\nsteps:\n  - notebook: only.ipynb\n")
+    f = write_yaml(
+        tmp_path / "wf.yaml", "name: solo\nsteps:\n  - notebook: only.ipynb\n"
+    )
     wf = load_workflow(f)
 
     assert len(wf.steps) == 1
@@ -67,7 +72,10 @@ def test_output_field_optional(tmp_path):
 def test_output_resolves_relative_to_yaml(tmp_path):
     sub = tmp_path / "sub"
     sub.mkdir()
-    f = write_yaml(sub / "wf.yaml", "name: x\nsteps:\n  - notebook: n.ipynb\n    output: out/file.csv\n")
+    f = write_yaml(
+        sub / "wf.yaml",
+        "name: x\nsteps:\n  - notebook: n.ipynb\n    output: out/file.csv\n",
+    )
     wf = load_workflow(f)
 
     assert wf.steps[0].output == sub / "out/file.csv"
