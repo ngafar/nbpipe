@@ -1,9 +1,7 @@
 import subprocess
-import sys
 from pathlib import Path
 
 import nbformat
-import pytest
 
 PROJECT_ROOT = Path(__file__).parent.parent
 
@@ -85,7 +83,7 @@ def test_run_multiple_notebooks_in_order(tmp_path):
 def test_output_check_passes_when_file_exists(tmp_path):
     out_file = tmp_path / "result.csv"
     make_notebook(tmp_path / "nb.ipynb", [f"open('{out_file}', 'w').write('data')"])
-    wf = f"name: test\nsteps:\n  - notebook: nb.ipynb\n    output: result.csv\n"
+    wf = "name: test\nsteps:\n  - notebook: nb.ipynb\n    output: result.csv\n"
     (tmp_path / "wf.yaml").write_text(wf)
 
     result = run_cli("run", str(tmp_path / "wf.yaml"))

@@ -44,7 +44,7 @@ def test_multi_step_pipeline(tmp_path):
         tmp_path / "transform.ipynb",
         [
             f"rows = open('{csv}').readlines()",
-            f"total = sum(int(r.split(',')[0]) for r in rows[1:])",
+            "total = sum(int(r.split(',')[0]) for r in rows[1:])",
             f"open('{result_txt}', 'w').write(str(total))",
         ],
     )
