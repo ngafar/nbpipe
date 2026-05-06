@@ -72,8 +72,9 @@ def test_no_command_exits_nonzero():
 
 
 def test_run_multiple_notebooks_in_order(tmp_path):
-    make_notebook(tmp_path / "a.ipynb", ["open('out.txt', 'w').write('hello')"])
-    make_notebook(tmp_path / "b.ipynb", ["print(open('out.txt').read())"])
+    out = tmp_path / "out.txt"
+    make_notebook(tmp_path / "a.ipynb", [f"open('{out}', 'w').write('hello')"])
+    make_notebook(tmp_path / "b.ipynb", [f"print(open('{out}').read())"])
     make_workflow(tmp_path / "wf.yaml", "chained", ["a.ipynb", "b.ipynb"])
 
     result = run_cli("run", str(tmp_path / "wf.yaml"))
