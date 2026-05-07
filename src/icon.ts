@@ -2,16 +2,11 @@ import { LabIcon } from "@jupyterlab/ui-components";
 
 export const nbpipeIcon = new LabIcon({
   name: "nbpipe:icon",
-  svgstr: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-    stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-    <!-- pipe sections -->
-    <rect x="1"  y="9" width="5" height="6" rx="1"/>
-    <rect x="9"  y="9" width="5" height="6" rx="1"/>
-    <rect x="17" y="9" width="5" height="6" rx="1"/>
-    <!-- arrows between sections -->
-    <path d="M6 12h3"/>
-    <path d="M8 10.5 L9.5 12 L8 13.5"/>
-    <path d="M14 12h3"/>
-    <path d="M16 10.5 L17.5 12 L16 13.5"/>
+  svgstr: `<svg fill="currentColor" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+    <g>
+      <path d="m336,200h-48v-48h32c17.672,0 32-14.328 32-32s-14.328-32-32-32h-128c-17.672,0-32,14.328-32,32s14.328,32 32,32h32v48h-48c-17.672,0-32,13.828-32,31.5v160c0,17.672 14.328,32.5 32,32.5h160c17.672,0 32-14.828 32-32.5v-160c0-17.672-14.328-31.5-32-31.5z"/>
+      <path d="m480,215.75c-17.672,0-32,14.25-32,32.25h-48v128h48c0,17 14.328,31.75 32,31.75s32-14.578 32-32.25v-32-64-32c0-17.672-14.328-31.75-32-31.75z"/>
+      <path d="m32,215.75c-17.672,0-32,14.078-32,31.75v32 64 32c0,17.672 14.328,32.25 32,32.25s32-14.75 32-31.75h48v-128h-48c0-18-14.328-32.25-32-32.25z"/>
+    </g>
   </svg>`,
 });
