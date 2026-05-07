@@ -22,9 +22,13 @@ classifiers = [
 dependencies = [
     "ipykernel>=7.2.0",
     "jupyter-client>=8.0",
+    "jupyter-server>=2.0",
     "nbformat>=5.10.4",
     "pyyaml>=6.0.3",
 ]
+
+[project.entry-points."jupyter_server.extension.config"]
+nbpipe = "nbpipe"
 
 [project.scripts]
 nbpipe = "nbpipe.cli:main"
@@ -38,8 +42,17 @@ Issues = "https://github.com/ngafar/nbpipe/issues"
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.hatch.build.targets.wheel.shared-data]
+"nbpipe/labextension" = "share/jupyter/labextensions/nbpipe"
+"jupyter-config.d/server-extension.json" = "etc/jupyter/jupyter_server_config.d/nbpipe.json"
+"install.json" = "share/jupyter/labextensions/nbpipe/install.json"
+
+[tool.hatch.build.targets.sdist]
+artifacts = ["nbpipe/labextension"]
+
 [dependency-groups]
 dev = [
+    "jupyterlab>=4.0",
     "pytest>=9.0.3",
     "ruff>=0.15.12",
 ]
