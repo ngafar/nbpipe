@@ -33,6 +33,8 @@ def make_workflow(path, name, steps):
 
 def test_multi_step_pipeline(tmp_path):
     """Notebooks pass data to each other through files."""
+    nbpipe = tmp_path / ".nbpipe"
+    nbpipe.mkdir()
     csv = tmp_path / "data.csv"
     result_txt = tmp_path / "result.txt"
 
@@ -52,7 +54,7 @@ def test_multi_step_pipeline(tmp_path):
         tmp_path / "verify.ipynb", [f"assert open('{result_txt}').read() == '4'"]
     )
     make_workflow(
-        tmp_path / "wf.yaml",
+        nbpipe / "wf.yaml",
         "pipeline",
         [
             {"notebook": "extract.ipynb", "output": str(csv)},
@@ -61,7 +63,7 @@ def test_multi_step_pipeline(tmp_path):
         ],
     )
 
-    result = run_cli("run", str(tmp_path / "wf.yaml"))
+    result = run_cli("run", str(nbpipe / "wf.yaml"))
 
     assert result.returncode == 0
     assert result_txt.read_text() == "4"
@@ -69,13 +71,15 @@ def test_multi_step_pipeline(tmp_path):
 
 def test_fail_fast_on_error(tmp_path):
     """A failing notebook stops the pipeline; later notebooks do not run."""
+    nbpipe = tmp_path / ".nbpipe"
+    nbpipe.mkdir()
     sentinel = tmp_path / "should_not_exist.txt"
 
     make_notebook(tmp_path / "ok.ipynb", ["x = 1"])
     make_notebook(tmp_path / "bad.ipynb", ["raise ValueError('step failed')"])
     make_notebook(tmp_path / "never.ipynb", [f"open('{sentinel}', 'w').write('ran')"])
     make_workflow(
-        tmp_path / "wf.yaml",
+        nbpipe / "wf.yaml",
         "failing",
         [
             {"notebook": "ok.ipynb"},
@@ -84,7 +88,7 @@ def test_fail_fast_on_error(tmp_path):
         ],
     )
 
-    result = run_cli("run", str(tmp_path / "wf.yaml"))
+    result = run_cli("run", str(nbpipe / "wf.yaml"))
 
     assert result.returncode == 1
     assert not sentinel.exists()
@@ -92,16 +96,17 @@ def test_fail_fast_on_error(tmp_path):
 
 def test_output_check_catches_missing_file(tmp_path):
     """A notebook that runs cleanly but skips writing its declared output fails the workflow."""
+    nbpipe = tmp_path / ".nbpipe"
+    nbpipe.mkdir()
+
     make_notebook(tmp_path / "nb.ipynb", ["x = 1"])  # never writes the output
     make_workflow(
-        tmp_path / "wf.yaml",
+        nbpipe / "wf.yaml",
         "missing-output",
-        [
-            {"notebook": "nb.ipynb", "output": "report.csv"},
-        ],
+        [{"notebook": "nb.ipynb", "output": "report.csv"}],
     )
 
-    result = run_cli("run", str(tmp_path / "wf.yaml"))
+    result = run_cli("run", str(nbpipe / "wf.yaml"))
 
     assert result.returncode == 1
     assert "report.csv" in result.stderr

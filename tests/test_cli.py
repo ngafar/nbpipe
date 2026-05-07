@@ -28,11 +28,17 @@ def make_workflow(path, name, notebooks):
     path.write_text("\n".join(lines) + "\n")
 
 
+def nbpipe_dir(tmp_path):
+    d = tmp_path / ".nbpipe"
+    d.mkdir()
+    return d
+
+
 def test_run_workflow_succeeds(tmp_path):
     make_notebook(tmp_path / "nb.ipynb", ["print('ok')"])
-    make_workflow(tmp_path / "wf.yaml", "test", ["nb.ipynb"])
+    make_workflow(nbpipe_dir(tmp_path) / "wf.yaml", "test", ["nb.ipynb"])
 
-    result = run_cli("run", str(tmp_path / "wf.yaml"))
+    result = run_cli("run", str(tmp_path / ".nbpipe/wf.yaml"))
 
     assert result.returncode == 0
     assert "done" in result.stdout
@@ -40,24 +46,24 @@ def test_run_workflow_succeeds(tmp_path):
 
 def test_run_workflow_output_contains_name(tmp_path):
     make_notebook(tmp_path / "nb.ipynb", ["x = 1"])
-    make_workflow(tmp_path / "wf.yaml", "my_pipeline", ["nb.ipynb"])
+    make_workflow(nbpipe_dir(tmp_path) / "wf.yaml", "my_pipeline", ["nb.ipynb"])
 
-    result = run_cli("run", str(tmp_path / "wf.yaml"))
+    result = run_cli("run", str(tmp_path / ".nbpipe/wf.yaml"))
 
     assert "my_pipeline" in result.stdout
 
 
 def test_run_missing_workflow_file(tmp_path):
-    result = run_cli("run", str(tmp_path / "missing.yaml"))
+    result = run_cli("run", str(tmp_path / ".nbpipe/missing.yaml"))
 
     assert result.returncode == 1
 
 
 def test_run_failing_notebook_exits_nonzero(tmp_path):
     make_notebook(tmp_path / "bad.ipynb", ["raise RuntimeError('boom')"])
-    make_workflow(tmp_path / "wf.yaml", "test", ["bad.ipynb"])
+    make_workflow(nbpipe_dir(tmp_path) / "wf.yaml", "test", ["bad.ipynb"])
 
-    result = run_cli("run", str(tmp_path / "wf.yaml"))
+    result = run_cli("run", str(tmp_path / ".nbpipe/wf.yaml"))
 
     assert result.returncode == 1
     assert "FAILED" in result.stdout or "FAILED" in result.stderr
@@ -73,9 +79,9 @@ def test_run_multiple_notebooks_in_order(tmp_path):
     out = tmp_path / "out.txt"
     make_notebook(tmp_path / "a.ipynb", [f"open('{out}', 'w').write('hello')"])
     make_notebook(tmp_path / "b.ipynb", [f"print(open('{out}').read())"])
-    make_workflow(tmp_path / "wf.yaml", "chained", ["a.ipynb", "b.ipynb"])
+    make_workflow(nbpipe_dir(tmp_path) / "wf.yaml", "chained", ["a.ipynb", "b.ipynb"])
 
-    result = run_cli("run", str(tmp_path / "wf.yaml"))
+    result = run_cli("run", str(tmp_path / ".nbpipe/wf.yaml"))
 
     assert result.returncode == 0
 
@@ -84,9 +90,9 @@ def test_output_check_passes_when_file_exists(tmp_path):
     out_file = tmp_path / "result.csv"
     make_notebook(tmp_path / "nb.ipynb", [f"open('{out_file}', 'w').write('data')"])
     wf = "name: test\nsteps:\n  - notebook: nb.ipynb\n    output: result.csv\n"
-    (tmp_path / "wf.yaml").write_text(wf)
+    nbpipe_dir(tmp_path).joinpath("wf.yaml").write_text(wf)
 
-    result = run_cli("run", str(tmp_path / "wf.yaml"))
+    result = run_cli("run", str(tmp_path / ".nbpipe/wf.yaml"))
 
     assert result.returncode == 0
 
@@ -94,9 +100,9 @@ def test_output_check_passes_when_file_exists(tmp_path):
 def test_run_workflow_yml_extension(tmp_path):
     make_notebook(tmp_path / "nb.ipynb", ["x = 1"])
     wf = "name: test\nsteps:\n  - notebook: nb.ipynb\n"
-    (tmp_path / "wf.yml").write_text(wf)
+    nbpipe_dir(tmp_path).joinpath("wf.yml").write_text(wf)
 
-    result = run_cli("run", str(tmp_path / "wf.yml"))
+    result = run_cli("run", str(tmp_path / ".nbpipe/wf.yml"))
 
     assert result.returncode == 0
 
@@ -104,9 +110,9 @@ def test_run_workflow_yml_extension(tmp_path):
 def test_output_check_fails_when_file_missing(tmp_path):
     make_notebook(tmp_path / "nb.ipynb", ["x = 1"])
     wf = "name: test\nsteps:\n  - notebook: nb.ipynb\n    output: missing.csv\n"
-    (tmp_path / "wf.yaml").write_text(wf)
+    nbpipe_dir(tmp_path).joinpath("wf.yaml").write_text(wf)
 
-    result = run_cli("run", str(tmp_path / "wf.yaml"))
+    result = run_cli("run", str(tmp_path / ".nbpipe/wf.yaml"))
 
     assert result.returncode == 1
     assert "missing.csv" in result.stderr

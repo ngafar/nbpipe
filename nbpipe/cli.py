@@ -1,12 +1,14 @@
 import argparse
 import sys
+from pathlib import Path
 
 from .runner import execute_notebook
 from .workflow import load_workflow
 
 
 def _run(args: argparse.Namespace) -> None:
-    workflow = load_workflow(args.workflow)
+    yaml_path = Path(args.workflow).resolve()
+    workflow = load_workflow(yaml_path, base_dir=yaml_path.parent.parent)
     total = len(workflow.steps)
     print(f"Workflow: {workflow.name}  ({total} step{'s' if total != 1 else ''})")
 
