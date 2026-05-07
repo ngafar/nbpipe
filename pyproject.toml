@@ -54,5 +54,6 @@ artifacts = ["nbpipe/labextension"]
 dev = [
     "jupyterlab>=4.0",
     "pytest>=9.0.3",
+    "pytest-jupyter[server]>=0.11.0",
     "ruff>=0.15.12",
 ]

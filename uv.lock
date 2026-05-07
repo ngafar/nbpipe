@@ -1042,6 +1042,7 @@ dependencies = [
 dev = [
     { name = "jupyterlab" },
     { name = "pytest" },
+    { name = "pytest-jupyter", extra = ["server"] },
     { name = "ruff" },
 ]
 
@@ -1058,6 +1059,7 @@ requires-dist = [
 dev = [
     { name = "jupyterlab", specifier = ">=4.0" },
     { name = "pytest", specifier = ">=9.0.3" },
+    { name = "pytest-jupyter", extras = ["server"], specifier = ">=0.11.0" },
     { name = "ruff", specifier = ">=0.15.12" },
 ]
 
@@ -1249,6 +1251,27 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/7d/0d/549bd94f1a0a402dc8cf64563a117c0f3765662e2e668477624baeec44d5/pytest-9.0.3.tar.gz", hash = "sha256:b86ada508af81d19edeb213c681b1d48246c1a91d304c6c81a427674c17eb91c", size = 1572165, upload-time = "2026-04-07T17:16:18.027Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/d4/24/a372aaf5c9b7208e7112038812994107bc65a84cd00e0354a88c2c77a617/pytest-9.0.3-py3-none-any.whl", hash = "sha256:2c5efc453d45394fdd706ade797c0a81091eccd1d6e4bccfcd476e2b8e0ab5d9", size = 375249, upload-time = "2026-04-07T17:16:16.13Z" },
+]
+
+[[package]]
+name = "pytest-jupyter"
+version = "0.11.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "jupyter-core" },
+    { name = "pytest" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/2d/9d/d32504513eab44d49353280845cf2f68523e6150ab8b5872f8f38fa5ce32/pytest_jupyter-0.11.0.tar.gz", hash = "sha256:a4e08ced44cfea1bce080090c626b8dc4f9d617fa5aafcd84b71405f503e9899", size = 15773, upload-time = "2025-10-16T12:18:41.716Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/5a/7c/80ca2226a62eb5562731dba38ee4d3ba0dc293d40cbc45a95a312cc61127/pytest_jupyter-0.11.0-py3-none-any.whl", hash = "sha256:677aec971c1e0aa60fb98db248eca4f916f0595012215190028a9e44a8cb64ba", size = 17939, upload-time = "2025-10-16T12:18:40.264Z" },
+]
+
+[package.optional-dependencies]
+server = [
+    { name = "ipykernel" },
+    { name = "jupyter-client" },
+    { name = "jupyter-server" },
+    { name = "nbformat" },
 ]
 
 [[package]]
