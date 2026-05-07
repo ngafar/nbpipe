@@ -809,7 +809,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@jupyterlab/apputils@npm:^4.6.7":
+"@jupyterlab/apputils@npm:^4.0.0, @jupyterlab/apputils@npm:^4.6.7":
   version: 4.6.7
   resolution: "@jupyterlab/apputils@npm:4.6.7"
   dependencies:
@@ -4910,6 +4910,7 @@ __metadata:
   resolution: "nbpipe@workspace:."
   dependencies:
     "@jupyterlab/application": ^4.0.0
+    "@jupyterlab/apputils": ^4.0.0
     "@jupyterlab/builder": ^4.0.0
     "@jupyterlab/coreutils": ^6.0.0
     "@jupyterlab/services": ^7.0.0

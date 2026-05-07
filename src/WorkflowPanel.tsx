@@ -1,3 +1,4 @@
+import { Dialog, showDialog } from "@jupyterlab/apputils";
 import React, { useEffect, useState } from "react";
 import { requestAPI } from "./handler";
 
@@ -52,6 +53,14 @@ export function WorkflowPanel(): JSX.Element {
     }
   }
 
+  function showError(name: string, message: string) {
+    void showDialog({
+      title: `${name} failed`,
+      body: message,
+      buttons: [Dialog.okButton()],
+    });
+  }
+
   const anyRunning = Object.values(states).some((s) => s.status === "running");
 
   return (
@@ -84,7 +93,11 @@ export function WorkflowPanel(): JSX.Element {
                 <span className="nbpipe-status nbpipe-success">✓</span>
               )}
               {state?.status === "error" && (
-                <span className="nbpipe-status nbpipe-error" title={state.message}>
+                <span
+                  className="nbpipe-status nbpipe-error nbpipe-error-btn"
+                  onClick={() => showError(wf.name, state.message)}
+                  title="Click to see error"
+                >
                   ✕
                 </span>
               )}

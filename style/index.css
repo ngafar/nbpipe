@@ -87,7 +87,7 @@
 
 .nbpipe-error {
   color: var(--jp-error-color1);
-  cursor: help;
+  cursor: pointer;
 }
 
 .nbpipe-run-btn {

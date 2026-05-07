@@ -7,11 +7,18 @@ jest.mock("../handler", () => ({
   requestAPI: (...args: unknown[]) => requestAPIMock(...args),
 }));
 
+const showDialogMock = jest.fn().mockResolvedValue({ button: { accept: true } });
+jest.mock("@jupyterlab/apputils", () => ({
+  showDialog: (...args: unknown[]) => showDialogMock(...args),
+  Dialog: { okButton: () => ({ label: "OK" }) },
+}));
+
 import { WorkflowPanel } from "../WorkflowPanel";
 
 describe("WorkflowPanel", () => {
   beforeEach(() => {
     requestAPIMock.mockReset();
+    showDialogMock.mockClear();
   });
 
   it("shows empty state when no workflows are returned", async () => {
@@ -79,6 +86,26 @@ describe("WorkflowPanel", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: "Run" }));
     await waitFor(() => expect(screen.getByText("✕")).toBeInTheDocument());
+  });
+
+  it("clicking the error indicator opens a dialog with the error message", async () => {
+    requestAPIMock
+      .mockResolvedValueOnce([{ name: "my_pipeline" }])
+      .mockRejectedValueOnce(new Error("cell error"));
+    render(<WorkflowPanel />);
+    await waitFor(() =>
+      expect(screen.getByText("my_pipeline")).toBeInTheDocument()
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Run" }));
+    await waitFor(() => expect(screen.getByText("✕")).toBeInTheDocument());
+
+    fireEvent.click(screen.getByText("✕"));
+    expect(showDialogMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: "my_pipeline failed",
+        body: expect.stringContaining("cell error"),
+      })
+    );
   });
 
   it("refresh button re-fetches workflows", async () => {
