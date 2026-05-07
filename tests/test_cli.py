@@ -91,6 +91,16 @@ def test_output_check_passes_when_file_exists(tmp_path):
     assert result.returncode == 0
 
 
+def test_run_workflow_yml_extension(tmp_path):
+    make_notebook(tmp_path / "nb.ipynb", ["x = 1"])
+    wf = "name: test\nsteps:\n  - notebook: nb.ipynb\n"
+    (tmp_path / "wf.yml").write_text(wf)
+
+    result = run_cli("run", str(tmp_path / "wf.yml"))
+
+    assert result.returncode == 0
+
+
 def test_output_check_fails_when_file_missing(tmp_path):
     make_notebook(tmp_path / "nb.ipynb", ["x = 1"])
     wf = "name: test\nsteps:\n  - notebook: nb.ipynb\n    output: missing.csv\n"

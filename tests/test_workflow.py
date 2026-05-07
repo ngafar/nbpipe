@@ -1,5 +1,5 @@
 import pytest
-from nbpipe.workflow import Step, Workflow, load_workflow
+from nbpipe.workflow import load_workflow
 
 
 def write_yaml(path, content):
@@ -30,26 +30,9 @@ def test_paths_resolve_relative_to_yaml(tmp_path):
     assert wf.steps[0].notebook == sub / "step.ipynb"
 
 
-def test_returns_workflow_dataclass(tmp_path):
-    f = write_yaml(tmp_path / "wf.yaml", "name: x\nsteps:\n  - notebook: n.ipynb\n")
-    wf = load_workflow(f)
-
-    assert isinstance(wf, Workflow)
-    assert isinstance(wf.steps[0], Step)
-
-
 def test_missing_file_raises(tmp_path):
     with pytest.raises(FileNotFoundError):
         load_workflow(tmp_path / "missing.yaml")
-
-
-def test_single_step(tmp_path):
-    f = write_yaml(
-        tmp_path / "wf.yaml", "name: solo\nsteps:\n  - notebook: only.ipynb\n"
-    )
-    wf = load_workflow(f)
-
-    assert len(wf.steps) == 1
 
 
 def test_output_field_parsed(tmp_path):

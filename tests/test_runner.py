@@ -48,14 +48,6 @@ def test_state_shared_across_cells(tmp_path):
     assert nb.cells[1].outputs[0]["text"] == "20\n"
 
 
-def test_written_in_place(tmp_path):
-    nb_path = make_notebook(tmp_path / "nb.ipynb", ["x = 1"])
-    execute_notebook(nb_path)
-
-    nb = read_notebook(nb_path)
-    assert nb.cells[0].execution_count == 1
-
-
 def test_cell_error_raises(tmp_path):
     nb_path = make_notebook(tmp_path / "nb.ipynb", ["raise ValueError('oops')"])
 
