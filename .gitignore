@@ -1,4 +1,5 @@
 .nbpipe/
+*.ipynb
 
 # JupyterLab extension artifacts
 .yarn/

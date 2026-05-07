@@ -17,9 +17,9 @@ class Workflow:
     steps: list[Step]
 
 
-def load_workflow(path: str | Path) -> Workflow:
+def load_workflow(path: str | Path, base_dir: Path | None = None) -> Workflow:
     path = Path(path).resolve()
-    base = path.parent
+    base = Path(base_dir).resolve() if base_dir else path.parent
 
     with open(path) as f:
         data = yaml.safe_load(f)

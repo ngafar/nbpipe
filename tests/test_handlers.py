@@ -86,7 +86,7 @@ async def test_run_workflow_not_found(jp_fetch):
 async def test_run_workflow_success(jp_fetch, jp_root_dir):
     nbpipe_dir = jp_root_dir / ".nbpipe"
     nbpipe_dir.mkdir()
-    make_notebook(nbpipe_dir / "nb.ipynb", ["x = 1 + 1"])
+    make_notebook(jp_root_dir / "nb.ipynb", ["x = 1 + 1"])
     make_workflow(nbpipe_dir / "simple.yaml", "simple", [{"notebook": "nb.ipynb"}])
 
     response = await jp_fetch(
@@ -104,7 +104,7 @@ async def test_run_workflow_success(jp_fetch, jp_root_dir):
 async def test_run_workflow_yml_extension(jp_fetch, jp_root_dir):
     nbpipe_dir = jp_root_dir / ".nbpipe"
     nbpipe_dir.mkdir()
-    make_notebook(nbpipe_dir / "nb.ipynb", ["x = 1"])
+    make_notebook(jp_root_dir / "nb.ipynb", ["x = 1"])
     make_workflow(nbpipe_dir / "simple.yml", "simple", [{"notebook": "nb.ipynb"}])
 
     response = await jp_fetch(
@@ -121,7 +121,7 @@ async def test_run_workflow_yml_extension(jp_fetch, jp_root_dir):
 async def test_run_workflow_cell_error_returns_500(jp_fetch, jp_root_dir):
     nbpipe_dir = jp_root_dir / ".nbpipe"
     nbpipe_dir.mkdir()
-    make_notebook(nbpipe_dir / "nb.ipynb", ["raise ValueError('boom')"])
+    make_notebook(jp_root_dir / "nb.ipynb", ["raise ValueError('boom')"])
     make_workflow(nbpipe_dir / "bad.yaml", "bad", [{"notebook": "nb.ipynb"}])
 
     response = await jp_fetch(
@@ -139,7 +139,7 @@ async def test_run_workflow_cell_error_returns_500(jp_fetch, jp_root_dir):
 async def test_run_workflow_missing_output_returns_500(jp_fetch, jp_root_dir):
     nbpipe_dir = jp_root_dir / ".nbpipe"
     nbpipe_dir.mkdir()
-    make_notebook(nbpipe_dir / "nb.ipynb", ["x = 1"])
+    make_notebook(jp_root_dir / "nb.ipynb", ["x = 1"])
     make_workflow(
         nbpipe_dir / "checked.yaml",
         "checked",

@@ -33,15 +33,15 @@ class RunWorkflowHandler(APIHandler):
 
         try:
             loop = asyncio.get_event_loop()
-            await loop.run_in_executor(None, _run_workflow, yaml_path)
+            await loop.run_in_executor(None, _run_workflow, yaml_path, root)
         except Exception as exc:
             raise tornado.web.HTTPError(500, str(exc))
 
         self.finish(json.dumps({"status": "ok"}))
 
 
-def _run_workflow(yaml_path: Path) -> None:
-    workflow = load_workflow(yaml_path)
+def _run_workflow(yaml_path: Path, base_dir: Path) -> None:
+    workflow = load_workflow(yaml_path, base_dir=base_dir)
     for step in workflow.steps:
         execute_notebook(step.notebook)
         if step.output and not step.output.exists():

@@ -52,6 +52,15 @@ def test_output_field_optional(tmp_path):
     assert wf.steps[0].output is None
 
 
+def test_base_dir_overrides_yaml_directory(tmp_path):
+    sub = tmp_path / "sub"
+    sub.mkdir()
+    f = write_yaml(sub / "wf.yaml", "name: x\nsteps:\n  - notebook: n.ipynb\n")
+    wf = load_workflow(f, base_dir=tmp_path)
+
+    assert wf.steps[0].notebook == tmp_path / "n.ipynb"
+
+
 def test_output_resolves_relative_to_yaml(tmp_path):
     sub = tmp_path / "sub"
     sub.mkdir()
