@@ -31,6 +31,7 @@
     "build:labextension": "jupyter labextension build .",
     "build:labextension:dev": "jupyter labextension build --development True .",
     "clean": "rimraf lib tsconfig.tsbuildinfo nbpipe/labextension",
+    "test": "jest",
     "watch": "run-p watch:src watch:labextension",
     "watch:src": "tsc -w --sourceMap",
     "watch:labextension": "jupyter labextension watch ."
@@ -45,8 +46,15 @@
   },
   "devDependencies": {
     "@jupyterlab/builder": "^4.0.0",
+    "@testing-library/jest-dom": "^6.0.0",
+    "@testing-library/react": "^14.0.0",
+    "@testing-library/user-event": "^14.0.0",
+    "@types/jest": "^29.0.0",
     "@types/react": "^18.0.0",
+    "jest": "^29.0.0",
+    "jest-environment-jsdom": "^29.0.0",
     "rimraf": "^5.0.0",
+    "ts-jest": "^29.0.0",
     "typescript": "~5.0.0"
   }
 }
