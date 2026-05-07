@@ -1,7 +1,6 @@
 import json
 
 import nbformat
-import pytest
 
 
 def make_notebook(path, sources):
@@ -73,7 +72,10 @@ async def test_get_workflows_sorted(jp_fetch, jp_root_dir):
 
 async def test_run_workflow_not_found(jp_fetch):
     response = await jp_fetch(
-        "nbpipe", "workflows", "missing", "run",
+        "nbpipe",
+        "workflows",
+        "missing",
+        "run",
         method="POST",
         body="",
         raise_error=False,
@@ -88,7 +90,10 @@ async def test_run_workflow_success(jp_fetch, jp_root_dir):
     make_workflow(nbpipe_dir / "simple.yaml", "simple", [{"notebook": "nb.ipynb"}])
 
     response = await jp_fetch(
-        "nbpipe", "workflows", "simple", "run",
+        "nbpipe",
+        "workflows",
+        "simple",
+        "run",
         method="POST",
         body="",
     )
@@ -103,7 +108,10 @@ async def test_run_workflow_yml_extension(jp_fetch, jp_root_dir):
     make_workflow(nbpipe_dir / "simple.yml", "simple", [{"notebook": "nb.ipynb"}])
 
     response = await jp_fetch(
-        "nbpipe", "workflows", "simple", "run",
+        "nbpipe",
+        "workflows",
+        "simple",
+        "run",
         method="POST",
         body="",
     )
@@ -117,7 +125,10 @@ async def test_run_workflow_cell_error_returns_500(jp_fetch, jp_root_dir):
     make_workflow(nbpipe_dir / "bad.yaml", "bad", [{"notebook": "nb.ipynb"}])
 
     response = await jp_fetch(
-        "nbpipe", "workflows", "bad", "run",
+        "nbpipe",
+        "workflows",
+        "bad",
+        "run",
         method="POST",
         body="",
         raise_error=False,
@@ -136,7 +147,10 @@ async def test_run_workflow_missing_output_returns_500(jp_fetch, jp_root_dir):
     )
 
     response = await jp_fetch(
-        "nbpipe", "workflows", "checked", "run",
+        "nbpipe",
+        "workflows",
+        "checked",
+        "run",
         method="POST",
         body="",
         raise_error=False,
