@@ -15,10 +15,20 @@ export async function requestAPI<T>(
     throw new ServerConnection.NetworkError(err as TypeError);
   }
 
-  const data = await response.json();
+  const text = await response.text();
+  let data: unknown;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    data = text;
+  }
 
   if (!response.ok) {
-    throw new ServerConnection.ResponseError(response, data?.message ?? data);
+    const message =
+      typeof data === "object" && data !== null && "message" in data
+        ? String((data as Record<string, unknown>).message)
+        : text;
+    throw new ServerConnection.ResponseError(response, message);
   }
 
   return data as T;

@@ -38,9 +38,11 @@ jest.mock("@jupyterlab/coreutils", () => ({
 import { requestAPI } from "../handler";
 
 function makeResponse(ok: boolean, body: unknown): Response {
+  const text =
+    typeof body === "string" ? body : JSON.stringify(body);
   return {
     ok,
-    json: async () => body,
+    text: async () => text,
   } as unknown as Response;
 }
 
@@ -74,6 +76,13 @@ describe("requestAPI", () => {
       makeResponse(false, { message: "not found" })
     );
     await expect(requestAPI("workflows")).rejects.toBeInstanceOf(ResponseError);
+  });
+
+  it("throws ResponseError with raw text when error body is not JSON", async () => {
+    makeRequestMock.mockResolvedValue(makeResponse(false, "<html>Bad Gateway</html>"));
+    const err = await requestAPI("workflows").catch((e) => e) as ResponseError;
+    expect(err).toBeInstanceOf(ResponseError);
+    expect(err.message).toContain("Bad Gateway");
   });
 
   it("passes init options to makeRequest", async () => {
