@@ -10,10 +10,12 @@ pip install nbpipe
 
 ## Usage
 
-Create a `.nbpipe/` directory at the root of your project and add a workflow YAML file inside it. Notebook paths are relative to the project root.
+Create a `.nbpipe/` directory at the root of your project and add a workflow YAML file inside it. 
 
 ```yaml
 # .nbpipe/my_workflow.yaml
+# Notebook paths are relative to the project root
+
 name: my_workflow
 steps:
   - notebook: prepare_data.ipynb
