@@ -5,6 +5,7 @@ import {
 } from "@jupyterlab/application";
 import { ReactWidget } from "@jupyterlab/ui-components";
 import React from "react";
+import { nbpipeIcon } from "./icon";
 import { WorkflowPanel } from "./WorkflowPanel";
 
 class WorkflowWidget extends ReactWidget {
@@ -21,8 +22,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
   activate: (_app: JupyterFrontEnd, labShell: ILabShell) => {
     const widget = new WorkflowWidget();
     widget.id = "nbpipe-sidebar";
+    widget.title.icon = nbpipeIcon;
     widget.title.caption = "nbpipe Workflows";
-    widget.title.className = "nbpipe-sidebar-icon";
 
     labShell.add(widget, "left", { rank: 500 });
   },

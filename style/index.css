@@ -110,7 +110,3 @@
   cursor: not-allowed;
 }
 
-.nbpipe-sidebar-icon::before {
-  content: "⬡";
-  font-size: 16px;
-}
