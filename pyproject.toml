@@ -6,7 +6,6 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [{ name = "Nawaz Gafar" }]
-keywords = ["jupyter", "notebook", "workflow", "pipeline", "automation", "nbformat"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
