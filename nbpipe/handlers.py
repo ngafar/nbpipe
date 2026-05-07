@@ -16,8 +16,10 @@ class WorkflowsHandler(APIHandler):
         nbpipe_dir = Path(self.settings["server_root_dir"]).expanduser() / ".nbpipe"
         workflows = []
         if nbpipe_dir.exists():
+            by_stem: dict[str, Path] = {}
             for f in sorted([*nbpipe_dir.glob("*.yaml"), *nbpipe_dir.glob("*.yml")]):
-                workflows.append({"name": f.stem})
+                by_stem.setdefault(f.stem, f)  # .yaml wins over .yml (sorts first)
+            workflows = [{"name": stem} for stem in sorted(by_stem)]
         self.finish(json.dumps(workflows))
 
 

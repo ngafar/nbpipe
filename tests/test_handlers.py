@@ -54,6 +54,16 @@ async def test_get_workflows_yml(jp_fetch, jp_root_dir):
     assert json.loads(response.body) == [{"name": "pipeline"}]
 
 
+async def test_get_workflows_deduplicates_yaml_and_yml(jp_fetch, jp_root_dir):
+    nbpipe_dir = jp_root_dir / ".nbpipe"
+    nbpipe_dir.mkdir(exist_ok=True)
+    make_workflow(nbpipe_dir / "pipeline.yaml", "pipeline", [{"notebook": "nb.ipynb"}])
+    make_workflow(nbpipe_dir / "pipeline.yml", "pipeline", [{"notebook": "nb.ipynb"}])
+
+    response = await jp_fetch("nbpipe", "workflows")
+    assert json.loads(response.body) == [{"name": "pipeline"}]
+
+
 async def test_get_workflows_sorted(jp_fetch, jp_root_dir):
     nbpipe_dir = jp_root_dir / ".nbpipe"
     nbpipe_dir.mkdir(exist_ok=True)
