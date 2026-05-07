@@ -14,7 +14,7 @@ class WorkflowsHandler(APIHandler):
     @tornado.web.authenticated
     def get(self):
         nbpipe_dir = Path(self.settings["server_root_dir"]).expanduser() / ".nbpipe"
-workflows = []
+        workflows = []
         if nbpipe_dir.exists():
             for f in sorted([*nbpipe_dir.glob("*.yaml"), *nbpipe_dir.glob("*.yml")]):
                 workflows.append({"name": f.stem})
