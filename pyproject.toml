@@ -1,7 +1,7 @@
 [project]
 name = "nbpipe"
 version = "0.1.1"
-description = "Run sequences of Jupyter notebooks as a workflow from the command line"
+description = "Run sequences of Jupyter notebooks as a workflow from the command line or the JupyterLab sidebar"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
