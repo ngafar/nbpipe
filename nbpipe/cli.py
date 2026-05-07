@@ -10,10 +10,11 @@ def _run(args: argparse.Namespace) -> None:
     yaml_path = Path(args.workflow).resolve()
     workflow = load_workflow(yaml_path, base_dir=yaml_path.parent.parent)
     total = len(workflow.steps)
-    print(f"Workflow: {workflow.name}  ({total} step{'s' if total != 1 else ''})")
+    print(f"Workflow: {workflow.name}")
 
     for i, step in enumerate(workflow.steps, 1):
         print(f"  [{i}/{total}] {step.notebook.name}", end="", flush=True)
+
         try:
             execute_notebook(step.notebook)
         except Exception as exc:
