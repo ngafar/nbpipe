@@ -29,6 +29,10 @@ Run it from the CLI:
 nbpipe run .nbpipe/my_workflow.yaml
 ```
 
+or from JupyterLab:
+
+![nbpipe sidebar](https://raw.githubusercontent.com/ngafar/nbpipe/main/jlab-screenshot.png)
+
 ## Step fields
 
 | Field | Required | Description |
