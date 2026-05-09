@@ -1,3 +1,5 @@
+// Source: https://www.svgrepo.com/svg/135899/pipe
+
 import { LabIcon } from "@jupyterlab/ui-components";
 
 export const nbpipeIcon = new LabIcon({
