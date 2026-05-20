@@ -1048,11 +1048,11 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "ipykernel", specifier = ">=7.2.0" },
+    { name = "ipykernel", specifier = ">=6.0" },
     { name = "jupyter-client", specifier = ">=8.0" },
     { name = "jupyter-server", specifier = ">=2.0" },
-    { name = "nbformat", specifier = ">=5.10.4" },
-    { name = "pyyaml", specifier = ">=6.0.3" },
+    { name = "nbformat", specifier = ">=5.1" },
+    { name = "pyyaml", specifier = ">=6.0" },
 ]
 
 [package.metadata.requires-dev]
