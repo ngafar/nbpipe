@@ -124,3 +124,30 @@ def test_output_literal_sets_no_pattern(tmp_path):
 
     assert wf.steps[0].output == tmp_path / "results.csv"
     assert wf.steps[0].output_pattern is None
+
+
+def test_notebook_wildcard_base_with_glob_special_chars(tmp_path):
+    base = tmp_path / "project[v1]"
+    base.mkdir()
+    (base / "report_jan.ipynb").write_text("{}")
+    f = write_yaml(base / "wf.yaml", "name: x\nsteps:\n  - notebook: report_*.ipynb\n")
+
+    wf = load_workflow(f)
+
+    assert wf.steps[0].notebook == base / "report_jan.ipynb"
+
+
+def test_output_wildcard_base_with_glob_special_chars(tmp_path):
+    import glob as _glob
+
+    base = tmp_path / "project[v1]"
+    base.mkdir()
+    (base / "results_jan.csv").write_text("data")
+    f = write_yaml(
+        base / "wf.yaml",
+        "name: x\nsteps:\n  - notebook: n.ipynb\n    output: results_*.csv\n",
+    )
+
+    wf = load_workflow(f)
+
+    assert _glob.glob(wf.steps[0].output_pattern) == [str(base / "results_jan.csv")]

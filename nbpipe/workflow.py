@@ -20,7 +20,7 @@ class Workflow:
 
 
 def _glob_one(base: Path, pattern: str) -> Path:
-    matches = sorted(Path(p) for p in _glob.glob(str(base / pattern)))
+    matches = sorted(Path(p) for p in _glob.glob(str(Path(_glob.escape(str(base))) / pattern)))
     if not matches:
         raise FileNotFoundError(f"No notebook matched pattern '{pattern}'")
     if len(matches) > 1:
@@ -48,7 +48,7 @@ def load_workflow(path: str | Path, base_dir: Path | None = None) -> Workflow:
         if "output" in item:
             out = item["output"]
             if "*" in out:
-                output_pattern = str(base / out)
+                output_pattern = str(Path(_glob.escape(str(base))) / out)
             else:
                 output = base / out
 
