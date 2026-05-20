@@ -23,6 +23,25 @@ def make_workflow(path, name, steps):
 # ---------------------------------------------------------------------------
 
 
+async def test_hidden_nbpipe_yaml_readable_via_contents_api(jp_fetch, jp_root_dir):
+    """Workflow YAML under .nbpipe/ must be readable by JupyterLab's Open button."""
+    nbpipe_dir = jp_root_dir / ".nbpipe"
+    nbpipe_dir.mkdir()
+    (nbpipe_dir / "demo.yaml").write_text("name: demo\nsteps: []\n")
+
+    response = await jp_fetch(
+        "api",
+        "contents",
+        ".nbpipe",
+        "demo.yaml",
+        params={"content": "0"},
+    )
+    assert response.code == 200
+    body = json.loads(response.body)
+    assert body["path"] == ".nbpipe/demo.yaml"
+    assert body["type"] == "file"
+
+
 async def test_get_workflows_no_nbpipe_dir(jp_fetch, jp_root_dir):
     response = await jp_fetch("nbpipe", "workflows")
     assert response.code == 200
@@ -42,7 +61,9 @@ async def test_get_workflows_yaml(jp_fetch, jp_root_dir):
     make_workflow(nbpipe_dir / "pipeline.yaml", "pipeline", [{"notebook": "nb.ipynb"}])
 
     response = await jp_fetch("nbpipe", "workflows")
-    assert json.loads(response.body) == [{"name": "pipeline"}]
+    assert json.loads(response.body) == [
+        {"name": "pipeline", "path": ".nbpipe/pipeline.yaml"}
+    ]
 
 
 async def test_get_workflows_yml(jp_fetch, jp_root_dir):
@@ -51,7 +72,9 @@ async def test_get_workflows_yml(jp_fetch, jp_root_dir):
     make_workflow(nbpipe_dir / "pipeline.yml", "pipeline", [{"notebook": "nb.ipynb"}])
 
     response = await jp_fetch("nbpipe", "workflows")
-    assert json.loads(response.body) == [{"name": "pipeline"}]
+    assert json.loads(response.body) == [
+        {"name": "pipeline", "path": ".nbpipe/pipeline.yml"}
+    ]
 
 
 async def test_get_workflows_deduplicates_yaml_and_yml(jp_fetch, jp_root_dir):
@@ -61,7 +84,9 @@ async def test_get_workflows_deduplicates_yaml_and_yml(jp_fetch, jp_root_dir):
     make_workflow(nbpipe_dir / "pipeline.yml", "pipeline", [{"notebook": "nb.ipynb"}])
 
     response = await jp_fetch("nbpipe", "workflows")
-    assert json.loads(response.body) == [{"name": "pipeline"}]
+    assert json.loads(response.body) == [
+        {"name": "pipeline", "path": ".nbpipe/pipeline.yaml"}
+    ]
 
 
 async def test_get_workflows_sorted(jp_fetch, jp_root_dir):

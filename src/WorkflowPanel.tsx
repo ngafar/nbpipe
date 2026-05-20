@@ -4,6 +4,7 @@ import { requestAPI } from "./handler";
 
 interface Workflow {
   name: string;
+  path: string;
 }
 
 type Status = "idle" | "running" | "success" | "error";
@@ -13,7 +14,11 @@ interface WorkflowState {
   message: string;
 }
 
-export function WorkflowPanel(): JSX.Element {
+interface Props {
+  openFile: (path: string) => void;
+}
+
+export function WorkflowPanel({ openFile }: Props): JSX.Element {
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [states, setStates] = useState<Record<string, WorkflowState>>({});
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -24,6 +29,7 @@ export function WorkflowPanel(): JSX.Element {
 
   async function fetchWorkflows() {
     setLoadError(null);
+    setStates({});
     try {
       const data = await requestAPI<Workflow[]>("workflows");
       setWorkflows(data);
@@ -88,11 +94,9 @@ export function WorkflowPanel(): JSX.Element {
           const isRunning = state?.status === "running";
           return (
             <li key={wf.name} className="nbpipe-item">
-              <span className="nbpipe-name">{wf.name}</span>
-              {state?.status === "success" && (
+              {state?.status === "success" ? (
                 <span className="nbpipe-status nbpipe-success">✓</span>
-              )}
-              {state?.status === "error" && (
+              ) : state?.status === "error" ? (
                 <span
                   className="nbpipe-status nbpipe-error nbpipe-error-btn"
                   onClick={() => showError(wf.name, state.message)}
@@ -100,7 +104,20 @@ export function WorkflowPanel(): JSX.Element {
                 >
                   ✕
                 </span>
+              ) : (
+                <span
+                  className={`nbpipe-status nbpipe-dot${isRunning ? " nbpipe-dot--running" : ""}`}
+                  aria-label={isRunning ? "running" : "idle"}
+                />
               )}
+              <span className="nbpipe-name">{wf.name}</span>
+              <button
+                className="nbpipe-open-btn"
+                onClick={() => openFile(wf.path)}
+                title="Open YAML in editor"
+              >
+                Open
+              </button>
               <button
                 className="nbpipe-run-btn"
                 onClick={() => runWorkflow(wf.name)}
