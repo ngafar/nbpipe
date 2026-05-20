@@ -29,6 +29,7 @@ export function WorkflowPanel({ openFile }: Props): JSX.Element {
 
   async function fetchWorkflows() {
     setLoadError(null);
+    setStates({});
     try {
       const data = await requestAPI<Workflow[]>("workflows");
       setWorkflows(data);

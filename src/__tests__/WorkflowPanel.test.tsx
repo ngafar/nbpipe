@@ -124,14 +124,21 @@ describe("WorkflowPanel", () => {
     );
   });
 
-  it("refresh button re-fetches workflows", async () => {
-    requestAPIMock.mockResolvedValue([{ name: "pipeline_a", path: ".nbpipe/pipeline_a.yaml" }]);
+  it("refresh button re-fetches workflows and clears statuses", async () => {
+    requestAPIMock
+      .mockResolvedValueOnce([{ name: "pipeline_a", path: ".nbpipe/pipeline_a.yaml" }])
+      .mockResolvedValueOnce({ status: "ok" })
+      .mockResolvedValueOnce([{ name: "pipeline_a", path: ".nbpipe/pipeline_a.yaml" }]);
     render(<WorkflowPanel openFile={noop} />);
     await waitFor(() =>
       expect(screen.getByText("pipeline_a")).toBeInTheDocument()
     );
+    fireEvent.click(screen.getByRole("button", { name: "Run" }));
+    await waitFor(() => expect(screen.getByText("✓")).toBeInTheDocument());
+
     fireEvent.click(screen.getByTitle("Refresh"));
-    await waitFor(() => expect(requestAPIMock).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(screen.getByLabelText("idle")).toBeInTheDocument());
+    expect(screen.queryByText("✓")).not.toBeInTheDocument();
   });
 
   it("Open button calls openFile with the workflow path", async () => {
