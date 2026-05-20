@@ -182,7 +182,9 @@ async def test_run_workflow_wildcard_output_passes(jp_fetch, jp_root_dir):
         [{"notebook": "nb.ipynb", "output": "report_*.csv"}],
     )
 
-    response = await jp_fetch("nbpipe", "workflows", "wc", "run", method="POST", body="")
+    response = await jp_fetch(
+        "nbpipe", "workflows", "wc", "run", method="POST", body=""
+    )
     assert response.code == 200
 
 
