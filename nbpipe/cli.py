@@ -1,4 +1,5 @@
 import argparse
+import glob as _glob
 import sys
 from pathlib import Path
 
@@ -21,7 +22,14 @@ def _run(args: argparse.Namespace) -> None:
             print(f"  FAILED\n{exc}", file=sys.stderr)
             sys.exit(1)
 
-        if step.output and not step.output.exists():
+        if step.output_pattern:
+            if not _glob.glob(step.output_pattern):
+                print(
+                    f"  FAILED\nNo output matched pattern: {step.output_pattern}",
+                    file=sys.stderr,
+                )
+                sys.exit(1)
+        elif step.output and not step.output.exists():
             print(
                 f"  FAILED\nExpected output not found: {step.output}", file=sys.stderr
             )

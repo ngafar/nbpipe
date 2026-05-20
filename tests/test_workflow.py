@@ -71,3 +71,52 @@ def test_output_resolves_relative_to_yaml(tmp_path):
     wf = load_workflow(f)
 
     assert wf.steps[0].output == sub / "out/file.csv"
+
+
+def test_notebook_wildcard_resolves_single_match(tmp_path):
+    (tmp_path / "report_2024-01-15.ipynb").write_text("{}")
+    f = write_yaml(
+        tmp_path / "wf.yaml",
+        "name: x\nsteps:\n  - notebook: report_*.ipynb\n",
+    )
+    wf = load_workflow(f)
+
+    assert wf.steps[0].notebook == tmp_path / "report_2024-01-15.ipynb"
+
+
+def test_notebook_wildcard_no_match_raises(tmp_path):
+    f = write_yaml(tmp_path / "wf.yaml", "name: x\nsteps:\n  - notebook: report_*.ipynb\n")
+
+    with pytest.raises(FileNotFoundError, match="report_\\*.ipynb"):
+        load_workflow(f)
+
+
+def test_notebook_wildcard_multiple_matches_raises(tmp_path):
+    (tmp_path / "report_a.ipynb").write_text("{}")
+    (tmp_path / "report_b.ipynb").write_text("{}")
+    f = write_yaml(tmp_path / "wf.yaml", "name: x\nsteps:\n  - notebook: report_*.ipynb\n")
+
+    with pytest.raises(ValueError, match="multiple"):
+        load_workflow(f)
+
+
+def test_output_wildcard_stores_pattern(tmp_path):
+    f = write_yaml(
+        tmp_path / "wf.yaml",
+        "name: x\nsteps:\n  - notebook: n.ipynb\n    output: results_*.csv\n",
+    )
+    wf = load_workflow(f)
+
+    assert wf.steps[0].output is None
+    assert wf.steps[0].output_pattern == str(tmp_path / "results_*.csv")
+
+
+def test_output_literal_sets_no_pattern(tmp_path):
+    f = write_yaml(
+        tmp_path / "wf.yaml",
+        "name: x\nsteps:\n  - notebook: n.ipynb\n    output: results.csv\n",
+    )
+    wf = load_workflow(f)
+
+    assert wf.steps[0].output == tmp_path / "results.csv"
+    assert wf.steps[0].output_pattern is None

@@ -116,3 +116,25 @@ def test_output_check_fails_when_file_missing(tmp_path):
 
     assert result.returncode == 1
     assert "missing.csv" in result.stderr
+
+
+def test_output_wildcard_passes_when_matching_file_exists(tmp_path):
+    out_file = tmp_path / "report_2024-01-15.csv"
+    make_notebook(tmp_path / "nb.ipynb", [f"open('{out_file}', 'w').write('data')"])
+    wf = "name: test\nsteps:\n  - notebook: nb.ipynb\n    output: report_*.csv\n"
+    nbpipe_dir(tmp_path).joinpath("wf.yaml").write_text(wf)
+
+    result = run_cli("run", str(tmp_path / ".nbpipe/wf.yaml"))
+
+    assert result.returncode == 0
+
+
+def test_output_wildcard_fails_when_no_matching_file(tmp_path):
+    make_notebook(tmp_path / "nb.ipynb", ["x = 1"])
+    wf = "name: test\nsteps:\n  - notebook: nb.ipynb\n    output: report_*.csv\n"
+    nbpipe_dir(tmp_path).joinpath("wf.yaml").write_text(wf)
+
+    result = run_cli("run", str(tmp_path / ".nbpipe/wf.yaml"))
+
+    assert result.returncode == 1
+    assert "report_" in result.stderr
