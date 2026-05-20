@@ -45,6 +45,17 @@ describe("WorkflowPanel", () => {
     });
   });
 
+  it("shows a grey dot for each idle workflow", async () => {
+    requestAPIMock.mockResolvedValue([
+      { name: "daily", path: ".nbpipe/daily.yaml" },
+      { name: "weekly", path: ".nbpipe/weekly.yaml" },
+    ]);
+    render(<WorkflowPanel openFile={noop} />);
+    await waitFor(() =>
+      expect(screen.getAllByLabelText("idle")).toHaveLength(2)
+    );
+  });
+
   it("shows load error when fetch fails", async () => {
     requestAPIMock.mockRejectedValue(new Error("network error"));
     render(<WorkflowPanel openFile={noop} />);

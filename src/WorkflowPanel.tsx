@@ -93,11 +93,9 @@ export function WorkflowPanel({ openFile }: Props): JSX.Element {
           const isRunning = state?.status === "running";
           return (
             <li key={wf.name} className="nbpipe-item">
-              <span className="nbpipe-name">{wf.name}</span>
-              {state?.status === "success" && (
+              {state?.status === "success" ? (
                 <span className="nbpipe-status nbpipe-success">✓</span>
-              )}
-              {state?.status === "error" && (
+              ) : state?.status === "error" ? (
                 <span
                   className="nbpipe-status nbpipe-error nbpipe-error-btn"
                   onClick={() => showError(wf.name, state.message)}
@@ -105,7 +103,10 @@ export function WorkflowPanel({ openFile }: Props): JSX.Element {
                 >
                   ✕
                 </span>
+              ) : (
+                <span className="nbpipe-status nbpipe-dot" aria-label="idle" />
               )}
+              <span className="nbpipe-name">{wf.name}</span>
               <button
                 className="nbpipe-open-btn"
                 onClick={() => openFile(wf.path)}

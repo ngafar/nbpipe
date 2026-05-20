@@ -77,8 +77,19 @@
 }
 
 .nbpipe-status {
-  font-size: 12px;
   flex-shrink: 0;
+  width: 14px;
+  font-size: 12px;
+  text-align: center;
+}
+
+.nbpipe-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--jp-ui-font-color3);
+  vertical-align: middle;
 }
 
 .nbpipe-success {
