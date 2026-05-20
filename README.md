@@ -31,7 +31,7 @@ Run it from the CLI:
 nbpipe run .nbpipe/my_workflow.yaml
 ```
 
-or from JupyterLab sidebar.
+or from the JupyterLab sidebar.
 
 ## Step fields
 
