@@ -2,7 +2,7 @@
 
 Run sequences of Jupyter notebooks as a workflow from the command line or the JupyterLab sidebar.
 
-<video src="https://raw.githubusercontent.com/ngafar/nbpipe/main/assets/nbpipe-demo.mp4" controls width="100%"></video>
+![nbpipe demo](https://raw.githubusercontent.com/ngafar/nbpipe/main/assets/nbpipe-demo.gif)
 
 ## Installation
 
