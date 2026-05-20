@@ -23,6 +23,25 @@ def make_workflow(path, name, steps):
 # ---------------------------------------------------------------------------
 
 
+async def test_hidden_nbpipe_yaml_readable_via_contents_api(jp_fetch, jp_root_dir):
+    """Workflow YAML under .nbpipe/ must be readable by JupyterLab's Open button."""
+    nbpipe_dir = jp_root_dir / ".nbpipe"
+    nbpipe_dir.mkdir()
+    (nbpipe_dir / "demo.yaml").write_text("name: demo\nsteps: []\n")
+
+    response = await jp_fetch(
+        "api",
+        "contents",
+        ".nbpipe",
+        "demo.yaml",
+        params={"content": "0"},
+    )
+    assert response.code == 200
+    body = json.loads(response.body)
+    assert body["path"] == ".nbpipe/demo.yaml"
+    assert body["type"] == "file"
+
+
 async def test_get_workflows_no_nbpipe_dir(jp_fetch, jp_root_dir):
     response = await jp_fetch("nbpipe", "workflows")
     assert response.code == 200
