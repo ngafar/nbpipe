@@ -52,6 +52,8 @@ def load_workflow(path: str | Path, base_dir: Path | None = None) -> Workflow:
             else:
                 output = base / out
 
-        steps.append(Step(notebook=notebook, output=output, output_pattern=output_pattern))
+        steps.append(
+            Step(notebook=notebook, output=output, output_pattern=output_pattern)
+        )
 
     return Workflow(name=data["name"], steps=steps)

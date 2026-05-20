@@ -85,7 +85,9 @@ def test_notebook_wildcard_resolves_single_match(tmp_path):
 
 
 def test_notebook_wildcard_no_match_raises(tmp_path):
-    f = write_yaml(tmp_path / "wf.yaml", "name: x\nsteps:\n  - notebook: report_*.ipynb\n")
+    f = write_yaml(
+        tmp_path / "wf.yaml", "name: x\nsteps:\n  - notebook: report_*.ipynb\n"
+    )
 
     with pytest.raises(FileNotFoundError, match="report_\\*.ipynb"):
         load_workflow(f)
@@ -94,7 +96,9 @@ def test_notebook_wildcard_no_match_raises(tmp_path):
 def test_notebook_wildcard_multiple_matches_raises(tmp_path):
     (tmp_path / "report_a.ipynb").write_text("{}")
     (tmp_path / "report_b.ipynb").write_text("{}")
-    f = write_yaml(tmp_path / "wf.yaml", "name: x\nsteps:\n  - notebook: report_*.ipynb\n")
+    f = write_yaml(
+        tmp_path / "wf.yaml", "name: x\nsteps:\n  - notebook: report_*.ipynb\n"
+    )
 
     with pytest.raises(ValueError, match="multiple"):
         load_workflow(f)
