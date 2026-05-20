@@ -166,3 +166,45 @@ async def test_run_workflow_missing_output_returns_500(jp_fetch, jp_root_dir):
         raise_error=False,
     )
     assert response.code == 500
+
+
+async def test_run_workflow_wildcard_output_passes(jp_fetch, jp_root_dir):
+    nbpipe_dir = jp_root_dir / ".nbpipe"
+    nbpipe_dir.mkdir()
+    out_file = jp_root_dir / "report_2024-01-15.csv"
+    make_notebook(
+        jp_root_dir / "nb.ipynb",
+        [f"open('{out_file}', 'w').write('data')"],
+    )
+    make_workflow(
+        nbpipe_dir / "wc.yaml",
+        "wc",
+        [{"notebook": "nb.ipynb", "output": "report_*.csv"}],
+    )
+
+    response = await jp_fetch(
+        "nbpipe", "workflows", "wc", "run", method="POST", body=""
+    )
+    assert response.code == 200
+
+
+async def test_run_workflow_wildcard_output_missing_returns_500(jp_fetch, jp_root_dir):
+    nbpipe_dir = jp_root_dir / ".nbpipe"
+    nbpipe_dir.mkdir()
+    make_notebook(jp_root_dir / "nb.ipynb", ["x = 1"])
+    make_workflow(
+        nbpipe_dir / "wc.yaml",
+        "wc",
+        [{"notebook": "nb.ipynb", "output": "report_*.csv"}],
+    )
+
+    response = await jp_fetch(
+        "nbpipe",
+        "workflows",
+        "wc",
+        "run",
+        method="POST",
+        body="",
+        raise_error=False,
+    )
+    assert response.code == 500

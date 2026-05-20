@@ -38,4 +38,4 @@ or from JupyterLab:
 | Field | Required | Description |
 |-------|----------|-------------|
 | `notebook` | yes | Notebook to run, relative to the project root |
-| `output` | no | File the notebook must produce — workflow fails if absent |
+| `output` | no | File the notebook must produce — workflow fails if absent. Supports wildcards (e.g. `report_*.csv`) for files with dynamic names such as timestamps |

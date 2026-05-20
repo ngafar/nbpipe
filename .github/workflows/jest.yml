@@ -17,6 +17,6 @@ jobs:
 
       - uses: astral-sh/setup-uv@v5
 
-      - run: uv run jlpm install --frozen-lockfile
+      - run: uv run jlpm install --immutable
 
       - run: uv run jlpm test

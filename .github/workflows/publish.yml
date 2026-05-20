@@ -25,7 +25,7 @@ jobs:
         run: uv sync --all-groups
 
       - name: Install JS dependencies
-        run: uv run jlpm install --frozen-lockfile
+        run: uv run jlpm install --immutable
 
       - name: Build JS extension
         run: uv run jlpm build:prod
