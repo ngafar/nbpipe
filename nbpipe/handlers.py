@@ -1,4 +1,5 @@
 import asyncio
+import glob as _glob
 import json
 from pathlib import Path
 
@@ -46,7 +47,10 @@ def _run_workflow(yaml_path: Path, base_dir: Path) -> None:
     workflow = load_workflow(yaml_path, base_dir=base_dir)
     for step in workflow.steps:
         execute_notebook(step.notebook)
-        if step.output and not step.output.exists():
+        if step.output_pattern:
+            if not _glob.glob(step.output_pattern):
+                raise RuntimeError(f"No output matched pattern: {step.output_pattern}")
+        elif step.output and not step.output.exists():
             raise RuntimeError(f"Expected output not found: {step.output}")
 
 
