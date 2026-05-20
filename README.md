@@ -2,6 +2,8 @@
 
 Run sequences of Jupyter notebooks as a workflow from the command line or the JupyterLab sidebar.
 
+<video src="https://raw.githubusercontent.com/ngafar/nbpipe/main/assets/nbpipe-demo.mp4" controls width="100%"></video>
+
 ## Installation
 
 ```bash
@@ -29,9 +31,7 @@ Run it from the CLI:
 nbpipe run .nbpipe/my_workflow.yaml
 ```
 
-or from JupyterLab:
-
-![nbpipe sidebar](https://raw.githubusercontent.com/ngafar/nbpipe/main/jlab-screenshot.png)
+or from JupyterLab sidebar.
 
 ## Step fields
 
