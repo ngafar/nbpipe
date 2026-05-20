@@ -42,7 +42,7 @@ async def test_get_workflows_yaml(jp_fetch, jp_root_dir):
     make_workflow(nbpipe_dir / "pipeline.yaml", "pipeline", [{"notebook": "nb.ipynb"}])
 
     response = await jp_fetch("nbpipe", "workflows")
-    assert json.loads(response.body) == [{"name": "pipeline"}]
+    assert json.loads(response.body) == [{"name": "pipeline", "path": ".nbpipe/pipeline.yaml"}]
 
 
 async def test_get_workflows_yml(jp_fetch, jp_root_dir):
@@ -51,7 +51,7 @@ async def test_get_workflows_yml(jp_fetch, jp_root_dir):
     make_workflow(nbpipe_dir / "pipeline.yml", "pipeline", [{"notebook": "nb.ipynb"}])
 
     response = await jp_fetch("nbpipe", "workflows")
-    assert json.loads(response.body) == [{"name": "pipeline"}]
+    assert json.loads(response.body) == [{"name": "pipeline", "path": ".nbpipe/pipeline.yml"}]
 
 
 async def test_get_workflows_deduplicates_yaml_and_yml(jp_fetch, jp_root_dir):
@@ -61,7 +61,7 @@ async def test_get_workflows_deduplicates_yaml_and_yml(jp_fetch, jp_root_dir):
     make_workflow(nbpipe_dir / "pipeline.yml", "pipeline", [{"notebook": "nb.ipynb"}])
 
     response = await jp_fetch("nbpipe", "workflows")
-    assert json.loads(response.body) == [{"name": "pipeline"}]
+    assert json.loads(response.body) == [{"name": "pipeline", "path": ".nbpipe/pipeline.yaml"}]
 
 
 async def test_get_workflows_sorted(jp_fetch, jp_root_dir):

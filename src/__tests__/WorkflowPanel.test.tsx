@@ -15,6 +15,8 @@ jest.mock("@jupyterlab/apputils", () => ({
 
 import { WorkflowPanel } from "../WorkflowPanel";
 
+const noop = () => undefined;
+
 describe("WorkflowPanel", () => {
   beforeEach(() => {
     requestAPIMock.mockReset();
@@ -23,7 +25,7 @@ describe("WorkflowPanel", () => {
 
   it("shows empty state when no workflows are returned", async () => {
     requestAPIMock.mockResolvedValue([]);
-    render(<WorkflowPanel />);
+    render(<WorkflowPanel openFile={noop} />);
     await waitFor(() =>
       expect(
         screen.getByText("No workflows found in .nbpipe/")
@@ -32,8 +34,11 @@ describe("WorkflowPanel", () => {
   });
 
   it("renders workflow names", async () => {
-    requestAPIMock.mockResolvedValue([{ name: "daily" }, { name: "weekly" }]);
-    render(<WorkflowPanel />);
+    requestAPIMock.mockResolvedValue([
+      { name: "daily", path: ".nbpipe/daily.yaml" },
+      { name: "weekly", path: ".nbpipe/weekly.yaml" },
+    ]);
+    render(<WorkflowPanel openFile={noop} />);
     await waitFor(() => {
       expect(screen.getByText("daily")).toBeInTheDocument();
       expect(screen.getByText("weekly")).toBeInTheDocument();
@@ -42,7 +47,7 @@ describe("WorkflowPanel", () => {
 
   it("shows load error when fetch fails", async () => {
     requestAPIMock.mockRejectedValue(new Error("network error"));
-    render(<WorkflowPanel />);
+    render(<WorkflowPanel openFile={noop} />);
     await waitFor(() =>
       expect(
         screen.getByText("Could not load workflows from .nbpipe/")
@@ -52,9 +57,9 @@ describe("WorkflowPanel", () => {
 
   it("shows Running label while workflow is executing", async () => {
     requestAPIMock
-      .mockResolvedValueOnce([{ name: "my_pipeline" }])
+      .mockResolvedValueOnce([{ name: "my_pipeline", path: ".nbpipe/my_pipeline.yaml" }])
       .mockReturnValueOnce(new Promise(() => {})); // never resolves
-    render(<WorkflowPanel />);
+    render(<WorkflowPanel openFile={noop} />);
     await waitFor(() =>
       expect(screen.getByText("my_pipeline")).toBeInTheDocument()
     );
@@ -66,9 +71,9 @@ describe("WorkflowPanel", () => {
 
   it("shows success indicator after workflow completes", async () => {
     requestAPIMock
-      .mockResolvedValueOnce([{ name: "my_pipeline" }])
+      .mockResolvedValueOnce([{ name: "my_pipeline", path: ".nbpipe/my_pipeline.yaml" }])
       .mockResolvedValueOnce({ status: "ok" });
-    render(<WorkflowPanel />);
+    render(<WorkflowPanel openFile={noop} />);
     await waitFor(() =>
       expect(screen.getByText("my_pipeline")).toBeInTheDocument()
     );
@@ -78,9 +83,9 @@ describe("WorkflowPanel", () => {
 
   it("shows error indicator when workflow fails", async () => {
     requestAPIMock
-      .mockResolvedValueOnce([{ name: "my_pipeline" }])
+      .mockResolvedValueOnce([{ name: "my_pipeline", path: ".nbpipe/my_pipeline.yaml" }])
       .mockRejectedValueOnce(new Error("cell error"));
-    render(<WorkflowPanel />);
+    render(<WorkflowPanel openFile={noop} />);
     await waitFor(() =>
       expect(screen.getByText("my_pipeline")).toBeInTheDocument()
     );
@@ -90,9 +95,9 @@ describe("WorkflowPanel", () => {
 
   it("clicking the error indicator opens a dialog with the error message", async () => {
     requestAPIMock
-      .mockResolvedValueOnce([{ name: "my_pipeline" }])
+      .mockResolvedValueOnce([{ name: "my_pipeline", path: ".nbpipe/my_pipeline.yaml" }])
       .mockRejectedValueOnce(new Error("cell error"));
-    render(<WorkflowPanel />);
+    render(<WorkflowPanel openFile={noop} />);
     await waitFor(() =>
       expect(screen.getByText("my_pipeline")).toBeInTheDocument()
     );
@@ -109,12 +114,25 @@ describe("WorkflowPanel", () => {
   });
 
   it("refresh button re-fetches workflows", async () => {
-    requestAPIMock.mockResolvedValue([{ name: "pipeline_a" }]);
-    render(<WorkflowPanel />);
+    requestAPIMock.mockResolvedValue([{ name: "pipeline_a", path: ".nbpipe/pipeline_a.yaml" }]);
+    render(<WorkflowPanel openFile={noop} />);
     await waitFor(() =>
       expect(screen.getByText("pipeline_a")).toBeInTheDocument()
     );
     fireEvent.click(screen.getByTitle("Refresh"));
     await waitFor(() => expect(requestAPIMock).toHaveBeenCalledTimes(2));
+  });
+
+  it("Open button calls openFile with the workflow path", async () => {
+    requestAPIMock.mockResolvedValue([
+      { name: "my_pipeline", path: ".nbpipe/my_pipeline.yaml" },
+    ]);
+    const openFile = jest.fn();
+    render(<WorkflowPanel openFile={openFile} />);
+    await waitFor(() =>
+      expect(screen.getByText("my_pipeline")).toBeInTheDocument()
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Open" }));
+    expect(openFile).toHaveBeenCalledWith(".nbpipe/my_pipeline.yaml");
   });
 });

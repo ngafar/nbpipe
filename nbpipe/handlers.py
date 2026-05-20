@@ -20,7 +20,10 @@ class WorkflowsHandler(APIHandler):
             by_stem: dict[str, Path] = {}
             for f in sorted([*nbpipe_dir.glob("*.yaml"), *nbpipe_dir.glob("*.yml")]):
                 by_stem.setdefault(f.stem, f)  # .yaml wins over .yml (sorts first)
-            workflows = [{"name": stem} for stem in sorted(by_stem)]
+            workflows = [
+                {"name": stem, "path": f".nbpipe/{stem}{by_stem[stem].suffix}"}
+                for stem in sorted(by_stem)
+            ]
         self.finish(json.dumps(workflows))
 
 

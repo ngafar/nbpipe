@@ -4,6 +4,7 @@ import { requestAPI } from "./handler";
 
 interface Workflow {
   name: string;
+  path: string;
 }
 
 type Status = "idle" | "running" | "success" | "error";
@@ -13,7 +14,11 @@ interface WorkflowState {
   message: string;
 }
 
-export function WorkflowPanel(): JSX.Element {
+interface Props {
+  openFile: (path: string) => void;
+}
+
+export function WorkflowPanel({ openFile }: Props): JSX.Element {
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [states, setStates] = useState<Record<string, WorkflowState>>({});
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -101,6 +106,13 @@ export function WorkflowPanel(): JSX.Element {
                   ✕
                 </span>
               )}
+              <button
+                className="nbpipe-open-btn"
+                onClick={() => openFile(wf.path)}
+                title="Open YAML in editor"
+              >
+                Open
+              </button>
               <button
                 className="nbpipe-run-btn"
                 onClick={() => runWorkflow(wf.name)}

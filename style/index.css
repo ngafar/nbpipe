@@ -90,6 +90,21 @@
   cursor: pointer;
 }
 
+.nbpipe-open-btn {
+  flex-shrink: 0;
+  padding: 2px 10px;
+  font-size: var(--jp-ui-font-size1);
+  background: none;
+  color: var(--jp-ui-font-color1);
+  border: 1px solid var(--jp-border-color1);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.nbpipe-open-btn:hover {
+  background: var(--jp-layout-color2);
+}
+
 .nbpipe-run-btn {
   flex-shrink: 0;
   padding: 2px 10px;
