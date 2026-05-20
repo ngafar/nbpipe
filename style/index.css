@@ -92,6 +92,15 @@
   vertical-align: middle;
 }
 
+@keyframes nbpipe-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+
+.nbpipe-dot--running {
+  animation: nbpipe-pulse 1.2s ease-in-out infinite;
+}
+
 .nbpipe-success {
   color: var(--jp-success-color1);
 }

@@ -105,7 +105,10 @@ export function WorkflowPanel({ openFile }: Props): JSX.Element {
                   ✕
                 </span>
               ) : (
-                <span className="nbpipe-status nbpipe-dot" aria-label="idle" />
+                <span
+                  className={`nbpipe-status nbpipe-dot${isRunning ? " nbpipe-dot--running" : ""}`}
+                  aria-label={isRunning ? "running" : "idle"}
+                />
               )}
               <span className="nbpipe-name">{wf.name}</span>
               <button

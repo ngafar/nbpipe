@@ -75,9 +75,10 @@ describe("WorkflowPanel", () => {
       expect(screen.getByText("my_pipeline")).toBeInTheDocument()
     );
     fireEvent.click(screen.getByRole("button", { name: "Run" }));
-    await waitFor(() =>
-      expect(screen.getByRole("button", { name: "Running…" })).toBeDisabled()
-    );
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Running…" })).toBeDisabled();
+      expect(screen.getByLabelText("running")).toBeInTheDocument();
+    });
   });
 
   it("shows success indicator after workflow completes", async () => {
