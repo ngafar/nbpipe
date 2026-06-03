@@ -1,7 +1,37 @@
+import threading
+import time
 from pathlib import Path
 
 import nbformat
 from jupyter_client import KernelManager
+
+
+class WorkflowStoppedError(RuntimeError):
+    pass
+
+
+class StopToken:
+    def __init__(self):
+        self._event = threading.Event()
+        self._km = None
+
+    def is_stopped(self) -> bool:
+        return self._event.is_set()
+
+    def stop(self) -> None:
+        self._event.set()
+        km = self._km
+        if km is not None:
+            try:
+                km.interrupt_kernel()
+            except Exception:
+                pass
+
+    def _set_km(self, km) -> None:
+        self._km = km
+
+    def _clear_km(self) -> None:
+        self._km = None
 
 
 def _collect_outputs(kc, execution_count: int) -> tuple[list, bool]:
@@ -61,18 +91,32 @@ def _collect_outputs(kc, execution_count: int) -> tuple[list, bool]:
     return outputs, had_error
 
 
-def execute_notebook(nb_path: Path) -> None:
+def execute_notebook(nb_path: Path, stop_token: StopToken | None = None) -> None:
     nb = nbformat.read(str(nb_path), as_version=4)
 
     km = KernelManager()
+    if stop_token is not None:
+        stop_token._set_km(km)
     km.start_kernel()
     kc = km.client()
     kc.start_channels()
-    kc.wait_for_ready(timeout=60)
+    deadline = time.monotonic() + 60
+    while True:
+        if stop_token and stop_token.is_stopped():
+            raise WorkflowStoppedError("Workflow was stopped")
+        try:
+            kc.wait_for_ready(timeout=0.25)
+            break
+        except RuntimeError:
+            if time.monotonic() >= deadline:
+                raise
 
     execution_count = 0
     try:
         for cell in nb.cells:
+            if stop_token and stop_token.is_stopped():
+                raise WorkflowStoppedError("Workflow was stopped")
+
             if cell.cell_type != "code":
                 continue
             if not cell.source.strip():
@@ -87,11 +131,17 @@ def execute_notebook(nb_path: Path) -> None:
             cell.execution_count = execution_count
 
             if had_error:
+                if stop_token and stop_token.is_stopped():
+                    raise WorkflowStoppedError("Workflow was stopped")
                 raise RuntimeError(
                     f"Cell {execution_count} raised an error in {nb_path.name}"
                 )
     finally:
+        if stop_token is not None:
+            stop_token._clear_km()
         kc.stop_channels()
         km.shutdown_kernel(now=True)
 
+    if stop_token and stop_token.is_stopped():
+        raise WorkflowStoppedError("Workflow was stopped")
     nbformat.write(nb, str(nb_path))

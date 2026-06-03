@@ -66,7 +66,7 @@ describe("WorkflowPanel", () => {
     );
   });
 
-  it("shows Running label while workflow is executing", async () => {
+  it("shows Stop button while workflow is executing", async () => {
     requestAPIMock
       .mockResolvedValueOnce([{ name: "my_pipeline", path: ".nbpipe/my_pipeline.yaml" }])
       .mockReturnValueOnce(new Promise(() => {})); // never resolves
@@ -76,8 +76,71 @@ describe("WorkflowPanel", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: "Run" }));
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: "Running…" })).toBeDisabled();
+      expect(screen.getByRole("button", { name: "Stop" })).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Run" })).not.toBeInTheDocument();
       expect(screen.getByLabelText("running")).toBeInTheDocument();
+    });
+  });
+
+  it("Stop button immediately shows Stopping… and calls stop endpoint", async () => {
+    requestAPIMock
+      .mockResolvedValueOnce([{ name: "my_pipeline", path: ".nbpipe/my_pipeline.yaml" }])
+      .mockReturnValueOnce(new Promise(() => {})) // run never resolves
+      .mockResolvedValueOnce({ status: "ok" }); // stop resolves immediately
+    render(<WorkflowPanel openFile={noop} />);
+    await waitFor(() => expect(screen.getByText("my_pipeline")).toBeInTheDocument());
+    fireEvent.click(screen.getByRole("button", { name: "Run" }));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Stop" })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole("button", { name: "Stop" }));
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Stopping…" })).toBeDisabled()
+    );
+    expect(requestAPIMock).toHaveBeenCalledWith(
+      "workflows/my_pipeline/stop",
+      { method: "POST" }
+    );
+  });
+
+  it("shows idle (not success) even if backend returns ok after stop was clicked", async () => {
+    let resolveRun!: (v: unknown) => void;
+    const runPromise = new Promise((res) => { resolveRun = res; });
+    requestAPIMock
+      .mockResolvedValueOnce([{ name: "my_pipeline", path: ".nbpipe/my_pipeline.yaml" }])
+      .mockReturnValueOnce(runPromise)
+      .mockResolvedValueOnce({ status: "ok" }); // stop
+    render(<WorkflowPanel openFile={noop} />);
+    await waitFor(() => expect(screen.getByText("my_pipeline")).toBeInTheDocument());
+    fireEvent.click(screen.getByRole("button", { name: "Run" }));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Stop" })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole("button", { name: "Stop" }));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Stopping…" })).toBeInTheDocument());
+
+    resolveRun({ status: "ok" }); // backend races and returns ok despite stop
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Run" })).toBeInTheDocument();
+      expect(screen.queryByText("✓")).not.toBeInTheDocument();
+    });
+  });
+
+  it("transitions back to idle when workflow is stopped", async () => {
+    let resolveRun!: (v: unknown) => void;
+    const runPromise = new Promise((res) => { resolveRun = res; });
+    requestAPIMock
+      .mockResolvedValueOnce([{ name: "my_pipeline", path: ".nbpipe/my_pipeline.yaml" }])
+      .mockReturnValueOnce(runPromise)
+      .mockResolvedValueOnce({ status: "ok" }); // stop
+    render(<WorkflowPanel openFile={noop} />);
+    await waitFor(() => expect(screen.getByText("my_pipeline")).toBeInTheDocument());
+    fireEvent.click(screen.getByRole("button", { name: "Run" }));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Stop" })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole("button", { name: "Stop" }));
+    resolveRun({ status: "stopped" });
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Run" })).toBeInTheDocument();
+      expect(screen.getByLabelText("idle")).toBeInTheDocument();
     });
   });
 

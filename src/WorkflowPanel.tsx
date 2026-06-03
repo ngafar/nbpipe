@@ -7,7 +7,7 @@ interface Workflow {
   path: string;
 }
 
-type Status = "idle" | "running" | "success" | "error";
+type Status = "idle" | "running" | "stopping" | "success" | "error";
 
 interface WorkflowState {
   status: Status;
@@ -44,18 +44,42 @@ export function WorkflowPanel({ openFile }: Props): JSX.Element {
       [name]: { status: "running", message: "" },
     }));
     try {
-      await requestAPI(`workflows/${encodeURIComponent(name)}/run`, {
-        method: "POST",
+      const result = await requestAPI<{ status: string }>(
+        `workflows/${encodeURIComponent(name)}/run`,
+        { method: "POST" }
+      );
+      setStates((prev) => {
+        const wasStopped =
+          result.status === "stopped" || prev[name]?.status === "stopping";
+        return {
+          ...prev,
+          [name]: wasStopped
+            ? { status: "idle", message: "" }
+            : { status: "success", message: "Done" },
+        };
       });
-      setStates((prev) => ({
-        ...prev,
-        [name]: { status: "success", message: "Done" },
-      }));
     } catch (err) {
       setStates((prev) => ({
         ...prev,
-        [name]: { status: "error", message: String(err) },
+        [name]:
+          prev[name]?.status === "stopping"
+            ? { status: "idle", message: "" }
+            : { status: "error", message: String(err) },
       }));
+    }
+  }
+
+  async function stopWorkflow(name: string) {
+    setStates((prev) => ({
+      ...prev,
+      [name]: { status: "stopping", message: "" },
+    }));
+    try {
+      await requestAPI(`workflows/${encodeURIComponent(name)}/stop`, {
+        method: "POST",
+      });
+    } catch {
+      // run promise will settle the state
     }
   }
 
@@ -67,7 +91,9 @@ export function WorkflowPanel({ openFile }: Props): JSX.Element {
     });
   }
 
-  const anyRunning = Object.values(states).some((s) => s.status === "running");
+  const anyRunning = Object.values(states).some(
+    (s) => s.status === "running" || s.status === "stopping"
+  );
 
   return (
     <div className="nbpipe-panel">
@@ -91,7 +117,9 @@ export function WorkflowPanel({ openFile }: Props): JSX.Element {
       <ul className="nbpipe-list">
         {workflows.map((wf) => {
           const state = states[wf.name];
-          const isRunning = state?.status === "running";
+          const isActive =
+            state?.status === "running" || state?.status === "stopping";
+          const isStopping = state?.status === "stopping";
           return (
             <li key={wf.name} className="nbpipe-item">
               {state?.status === "success" ? (
@@ -106,8 +134,8 @@ export function WorkflowPanel({ openFile }: Props): JSX.Element {
                 </span>
               ) : (
                 <span
-                  className={`nbpipe-status nbpipe-dot${isRunning ? " nbpipe-dot--running" : ""}`}
-                  aria-label={isRunning ? "running" : "idle"}
+                  className={`nbpipe-status nbpipe-dot${isActive ? " nbpipe-dot--running" : ""}`}
+                  aria-label={isActive ? "running" : "idle"}
                 />
               )}
               <span className="nbpipe-name">{wf.name}</span>
@@ -118,13 +146,23 @@ export function WorkflowPanel({ openFile }: Props): JSX.Element {
               >
                 Open
               </button>
-              <button
-                className="nbpipe-run-btn"
-                onClick={() => runWorkflow(wf.name)}
-                disabled={anyRunning}
-              >
-                {isRunning ? "Running…" : "Run"}
-              </button>
+              {isActive ? (
+                <button
+                  className="nbpipe-stop-btn"
+                  onClick={() => stopWorkflow(wf.name)}
+                  disabled={isStopping}
+                >
+                  {isStopping ? "Stopping…" : "Stop"}
+                </button>
+              ) : (
+                <button
+                  className="nbpipe-run-btn"
+                  onClick={() => runWorkflow(wf.name)}
+                  disabled={anyRunning}
+                >
+                  Run
+                </button>
+              )}
             </li>
           );
         })}
