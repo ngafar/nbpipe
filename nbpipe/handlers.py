@@ -58,6 +58,10 @@ class RunWorkflowHandler(APIHandler):
         finally:
             _stop_tokens.pop(name, None)
 
+        if token.is_stopped():
+            self.finish(json.dumps({"status": "stopped"}))
+            return
+
         self.finish(json.dumps({"status": "ok"}))
 
 
