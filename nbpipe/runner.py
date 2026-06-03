@@ -132,4 +132,6 @@ def execute_notebook(nb_path: Path, stop_token: StopToken | None = None) -> None
         kc.stop_channels()
         km.shutdown_kernel(now=True)
 
+    if stop_token and stop_token.is_stopped():
+        raise WorkflowStoppedError("Workflow was stopped")
     nbformat.write(nb, str(nb_path))
