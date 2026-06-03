@@ -1,4 +1,5 @@
 import threading
+import time
 from pathlib import Path
 
 import nbformat
@@ -99,7 +100,16 @@ def execute_notebook(nb_path: Path, stop_token: StopToken | None = None) -> None
     km.start_kernel()
     kc = km.client()
     kc.start_channels()
-    kc.wait_for_ready(timeout=60)
+    deadline = time.monotonic() + 60
+    while True:
+        if stop_token and stop_token.is_stopped():
+            raise WorkflowStoppedError("Workflow was stopped")
+        try:
+            kc.wait_for_ready(timeout=0.25)
+            break
+        except RuntimeError:
+            if time.monotonic() >= deadline:
+                raise
 
     execution_count = 0
     try:
