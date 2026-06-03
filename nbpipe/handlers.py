@@ -32,24 +32,25 @@ class WorkflowsHandler(APIHandler):
 class RunWorkflowHandler(APIHandler):
     @tornado.web.authenticated
     async def post(self, name):
-        if name in _stop_tokens:
+        token = StopToken()
+        if _stop_tokens.setdefault(name, token) is not token:
             raise tornado.web.HTTPError(409, f"Workflow '{name}' is already running")
 
-        root = Path(self.settings["server_root_dir"]).expanduser()
-        yaml_path = root / ".nbpipe" / f"{name}.yaml"
-        if not yaml_path.exists():
-            yaml_path = root / ".nbpipe" / f"{name}.yml"
-        if not yaml_path.exists():
-            raise tornado.web.HTTPError(404, f"Workflow '{name}' not found")
-
-        token = StopToken()
-        _stop_tokens[name] = token
         try:
+            root = Path(self.settings["server_root_dir"]).expanduser()
+            yaml_path = root / ".nbpipe" / f"{name}.yaml"
+            if not yaml_path.exists():
+                yaml_path = root / ".nbpipe" / f"{name}.yml"
+            if not yaml_path.exists():
+                raise tornado.web.HTTPError(404, f"Workflow '{name}' not found")
+
             loop = asyncio.get_event_loop()
             await loop.run_in_executor(None, _run_workflow, yaml_path, root, token)
         except WorkflowStoppedError:
             self.finish(json.dumps({"status": "stopped"}))
             return
+        except tornado.web.HTTPError:
+            raise
         except Exception as exc:
             if token.is_stopped():
                 self.finish(json.dumps({"status": "stopped"}))
