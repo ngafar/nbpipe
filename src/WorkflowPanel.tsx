@@ -21,6 +21,7 @@ interface Props {
 export function WorkflowPanel({ openFile }: Props): JSX.Element {
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [states, setStates] = useState<Record<string, WorkflowState>>({});
+  const [stopping, setStopping] = useState<Set<string>>(new Set());
   const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -44,18 +45,43 @@ export function WorkflowPanel({ openFile }: Props): JSX.Element {
       [name]: { status: "running", message: "" },
     }));
     try {
-      await requestAPI(`workflows/${encodeURIComponent(name)}/run`, {
-        method: "POST",
-      });
-      setStates((prev) => ({
-        ...prev,
-        [name]: { status: "success", message: "Done" },
-      }));
+      const result = await requestAPI<{ status: string }>(
+        `workflows/${encodeURIComponent(name)}/run`,
+        { method: "POST" }
+      );
+      if (result.status === "stopped") {
+        setStates((prev) => ({
+          ...prev,
+          [name]: { status: "idle", message: "" },
+        }));
+      } else {
+        setStates((prev) => ({
+          ...prev,
+          [name]: { status: "success", message: "Done" },
+        }));
+      }
     } catch (err) {
       setStates((prev) => ({
         ...prev,
         [name]: { status: "error", message: String(err) },
       }));
+    } finally {
+      setStopping((prev) => {
+        const next = new Set(prev);
+        next.delete(name);
+        return next;
+      });
+    }
+  }
+
+  async function stopWorkflow(name: string) {
+    setStopping((prev) => new Set([...prev, name]));
+    try {
+      await requestAPI(`workflows/${encodeURIComponent(name)}/stop`, {
+        method: "POST",
+      });
+    } catch {
+      // run promise will settle the state
     }
   }
 
@@ -92,6 +118,7 @@ export function WorkflowPanel({ openFile }: Props): JSX.Element {
         {workflows.map((wf) => {
           const state = states[wf.name];
           const isRunning = state?.status === "running";
+          const isStopping = stopping.has(wf.name);
           return (
             <li key={wf.name} className="nbpipe-item">
               {state?.status === "success" ? (
@@ -118,13 +145,23 @@ export function WorkflowPanel({ openFile }: Props): JSX.Element {
               >
                 Open
               </button>
-              <button
-                className="nbpipe-run-btn"
-                onClick={() => runWorkflow(wf.name)}
-                disabled={anyRunning}
-              >
-                {isRunning ? "Running…" : "Run"}
-              </button>
+              {isRunning ? (
+                <button
+                  className="nbpipe-stop-btn"
+                  onClick={() => stopWorkflow(wf.name)}
+                  disabled={isStopping}
+                >
+                  {isStopping ? "Stopping…" : "Stop"}
+                </button>
+              ) : (
+                <button
+                  className="nbpipe-run-btn"
+                  onClick={() => runWorkflow(wf.name)}
+                  disabled={anyRunning}
+                >
+                  Run
+                </button>
+              )}
             </li>
           );
         })}

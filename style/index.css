@@ -145,3 +145,23 @@
   cursor: not-allowed;
 }
 
+.nbpipe-stop-btn {
+  flex-shrink: 0;
+  padding: 2px 10px;
+  font-size: var(--jp-ui-font-size1);
+  background: var(--jp-error-color1);
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.nbpipe-stop-btn:hover:not(:disabled) {
+  background: var(--jp-error-color0);
+}
+
+.nbpipe-stop-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
