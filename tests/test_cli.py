@@ -140,7 +140,6 @@ def test_output_wildcard_fails_when_no_matching_file(tmp_path):
     assert "report_" in result.stderr
 
 
-
 def test_yaml_timeout_exits_nonzero_with_message(tmp_path):
     make_notebook(tmp_path / "nb.ipynb", ["import time; time.sleep(30)"])
     wf = "name: test\nsteps:\n  - notebook: nb.ipynb\n    timeout: 1\n"
