@@ -109,7 +109,6 @@ def execute_notebook(
     timeout: float | None = None,
 ) -> None:
     nb = nbformat.read(str(nb_path), as_version=4)
-    nb_deadline = time.monotonic() + timeout if timeout is not None else None
 
     km = KernelManager()
     if stop_token is not None:
@@ -127,6 +126,8 @@ def execute_notebook(
         except RuntimeError:
             if time.monotonic() >= ready_deadline:
                 raise
+
+    nb_deadline = time.monotonic() + timeout if timeout is not None else None
 
     execution_count = 0
     try:
