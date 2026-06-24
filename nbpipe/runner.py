@@ -34,7 +34,9 @@ class StopToken:
         self._km = None
 
 
-def _collect_outputs(kc, execution_count: int, deadline: float | None = None) -> tuple[list, bool]:
+def _collect_outputs(
+    kc, execution_count: int, deadline: float | None = None
+) -> tuple[list, bool]:
     """Drain iopub messages for one execute request; return (outputs, had_error)."""
     import queue
 
@@ -142,7 +144,9 @@ def execute_notebook(
             execution_count += 1
             kc.execute(cell.source)
             try:
-                outputs, had_error = _collect_outputs(kc, execution_count, deadline=nb_deadline)
+                outputs, had_error = _collect_outputs(
+                    kc, execution_count, deadline=nb_deadline
+                )
             except TimeoutError:
                 km.interrupt_kernel()
                 raise TimeoutError(
