@@ -9,6 +9,7 @@
   ],
   "license": "MIT",
   "author": "Nawaz Gafar",
+  "homepage": "https://github.com/ngafar/nbpipe",
   "files": [
     "src",
     "style"
