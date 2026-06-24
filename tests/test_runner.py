@@ -62,3 +62,9 @@ def test_empty_cells_skipped(tmp_path):
     nb = read_notebook(nb_path)
     assert nb.cells[0].execution_count is None
     assert nb.cells[1].execution_count == 1
+
+
+def test_timeout_raises(tmp_path):
+    nb_path = make_notebook(tmp_path / "nb.ipynb", ["import time; time.sleep(30)"])
+    with pytest.raises(TimeoutError, match="nb.ipynb timed out"):
+        execute_notebook(nb_path, timeout=1)

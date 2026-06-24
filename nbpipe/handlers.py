@@ -81,7 +81,7 @@ def _run_workflow(yaml_path: Path, base_dir: Path, stop_token: StopToken) -> Non
     for step in workflow.steps:
         if stop_token.is_stopped():
             raise WorkflowStoppedError("Workflow was stopped")
-        execute_notebook(step.notebook, stop_token=stop_token)
+        execute_notebook(step.notebook, stop_token=stop_token, timeout=step.timeout)
         if step.output_pattern:
             if not _glob.glob(step.output_pattern):
                 raise RuntimeError(f"No output matched pattern: {step.output_pattern}")

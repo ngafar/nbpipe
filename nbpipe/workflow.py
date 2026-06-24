@@ -11,6 +11,7 @@ class Step:
     notebook: Path
     output: Optional[Path] = None
     output_pattern: Optional[str] = None
+    timeout: Optional[float] = None
 
 
 @dataclass
@@ -55,7 +56,12 @@ def load_workflow(path: str | Path, base_dir: Path | None = None) -> Workflow:
                 output = base / out
 
         steps.append(
-            Step(notebook=notebook, output=output, output_pattern=output_pattern)
+            Step(
+                notebook=notebook,
+                output=output,
+                output_pattern=output_pattern,
+                timeout=item.get("timeout"),
+            )
         )
 
     return Workflow(name=data["name"], steps=steps)

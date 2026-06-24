@@ -21,6 +21,7 @@ name: my_workflow
 steps:
   - notebook: prepare_data.ipynb
     output: data/processed.csv
+    timeout: 120
   - notebook: train_model.ipynb
 ```
 
@@ -38,3 +39,4 @@ or from the JupyterLab sidebar.
 |-------|----------|-------------|
 | `notebook` | yes | Notebook to run, relative to the project root. |
 | `output` | no | File the notebook must produce — workflow fails if absent. Supports wildcards (e.g. `report_*.csv`). |
+| `timeout` | no | Maximum seconds the notebook may run. Raises an error if exceeded. |

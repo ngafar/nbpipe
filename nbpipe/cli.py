@@ -1,6 +1,7 @@
 import argparse
 import glob as _glob
 import sys
+import time
 from pathlib import Path
 
 from .runner import execute_notebook
@@ -16,26 +17,30 @@ def _run(args: argparse.Namespace) -> None:
     for i, step in enumerate(workflow.steps, 1):
         print(f"  [{i}/{total}] {step.notebook.name}", end="", flush=True)
 
+        t0 = time.monotonic()
         try:
-            execute_notebook(step.notebook)
+            execute_notebook(step.notebook, timeout=step.timeout)
         except Exception as exc:
-            print(f"  FAILED\n{exc}", file=sys.stderr)
+            elapsed = time.monotonic() - t0
+            print(f"  FAILED ({elapsed:.1f}s)\n{exc}", file=sys.stderr)
             sys.exit(1)
+        elapsed = time.monotonic() - t0
 
         if step.output_pattern:
             if not _glob.glob(step.output_pattern):
                 print(
-                    f"  FAILED\nNo output matched pattern: {step.output_pattern}",
+                    f"  FAILED ({elapsed:.1f}s)\nNo output matched pattern: {step.output_pattern}",
                     file=sys.stderr,
                 )
                 sys.exit(1)
         elif step.output and not step.output.exists():
             print(
-                f"  FAILED\nExpected output not found: {step.output}", file=sys.stderr
+                f"  FAILED ({elapsed:.1f}s)\nExpected output not found: {step.output}",
+                file=sys.stderr,
             )
             sys.exit(1)
 
-        print(" done")
+        print(f" done ({elapsed:.1f}s)")
 
     print("Done.")
 
