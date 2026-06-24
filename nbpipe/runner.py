@@ -34,7 +34,7 @@ class StopToken:
         self._km = None
 
 
-def _collect_outputs(kc, execution_count: int) -> tuple[list, bool]:
+def _collect_outputs(kc, execution_count: int, deadline: float | None = None) -> tuple[list, bool]:
     """Drain iopub messages for one execute request; return (outputs, had_error)."""
     import queue
 
@@ -42,10 +42,20 @@ def _collect_outputs(kc, execution_count: int) -> tuple[list, bool]:
     had_error = False
 
     while True:
+        if deadline is not None:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise TimeoutError("timed out")
+            poll_timeout = min(remaining, 1.0)
+        else:
+            poll_timeout = 60
+
         try:
-            msg = kc.get_iopub_msg(timeout=60)
+            msg = kc.get_iopub_msg(timeout=poll_timeout)
         except queue.Empty:
-            break
+            if deadline is None:
+                break
+            continue
 
         msg_type = msg["msg_type"]
         content = msg["content"]
@@ -91,8 +101,13 @@ def _collect_outputs(kc, execution_count: int) -> tuple[list, bool]:
     return outputs, had_error
 
 
-def execute_notebook(nb_path: Path, stop_token: StopToken | None = None) -> None:
+def execute_notebook(
+    nb_path: Path,
+    stop_token: StopToken | None = None,
+    timeout: float | None = None,
+) -> None:
     nb = nbformat.read(str(nb_path), as_version=4)
+    nb_deadline = time.monotonic() + timeout if timeout is not None else None
 
     km = KernelManager()
     if stop_token is not None:
@@ -100,7 +115,7 @@ def execute_notebook(nb_path: Path, stop_token: StopToken | None = None) -> None
     km.start_kernel()
     kc = km.client()
     kc.start_channels()
-    deadline = time.monotonic() + 60
+    ready_deadline = time.monotonic() + 60
     while True:
         if stop_token and stop_token.is_stopped():
             raise WorkflowStoppedError("Workflow was stopped")
@@ -108,7 +123,7 @@ def execute_notebook(nb_path: Path, stop_token: StopToken | None = None) -> None
             kc.wait_for_ready(timeout=0.25)
             break
         except RuntimeError:
-            if time.monotonic() >= deadline:
+            if time.monotonic() >= ready_deadline:
                 raise
 
     execution_count = 0
@@ -126,7 +141,13 @@ def execute_notebook(nb_path: Path, stop_token: StopToken | None = None) -> None
 
             execution_count += 1
             kc.execute(cell.source)
-            outputs, had_error = _collect_outputs(kc, execution_count)
+            try:
+                outputs, had_error = _collect_outputs(kc, execution_count, deadline=nb_deadline)
+            except TimeoutError:
+                km.interrupt_kernel()
+                raise TimeoutError(
+                    f"{nb_path.name} timed out after {timeout}s (cell {execution_count})"
+                )
             cell.outputs = outputs
             cell.execution_count = execution_count
 

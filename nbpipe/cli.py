@@ -17,7 +17,7 @@ def _run(args: argparse.Namespace) -> None:
         print(f"  [{i}/{total}] {step.notebook.name}", end="", flush=True)
 
         try:
-            execute_notebook(step.notebook)
+            execute_notebook(step.notebook, timeout=step.timeout)
         except Exception as exc:
             print(f"  FAILED\n{exc}", file=sys.stderr)
             sys.exit(1)
