@@ -138,3 +138,15 @@ def test_output_wildcard_fails_when_no_matching_file(tmp_path):
 
     assert result.returncode == 1
     assert "report_" in result.stderr
+
+
+
+def test_yaml_timeout_exits_nonzero_with_message(tmp_path):
+    make_notebook(tmp_path / "nb.ipynb", ["import time; time.sleep(30)"])
+    wf = "name: test\nsteps:\n  - notebook: nb.ipynb\n    timeout: 1\n"
+    nbpipe_dir(tmp_path).joinpath("wf.yaml").write_text(wf)
+
+    result = run_cli("run", str(tmp_path / ".nbpipe/wf.yaml"))
+
+    assert result.returncode == 1
+    assert "timed out" in result.stderr
